@@ -47,7 +47,6 @@ WETH Withdrawal → wstETH Swap → Morpho Lending → ETH Transfer to Borrower
 | **Circle Logic** | HorizonCircleWithMorphoAuth | `0x763004aE80080C36ec99eC5f2dc3F2C260638A83` | 
 | **Discovery** | CircleRegistry | `0x68Dc6FeBA312BF9B7BfBe096EA5e7ccb61a522dE` |
 | **Loan Execution** | LendingModule | `0xE5B8B9230BF53288e00ea4Fd2b17868cC6621801` |
-| **Yield Generation** | Morpho WETH Vault | `0x7Cbaa98bd5e171A658FdF761ED1Db33806a0d346` |
 
 **Network**: Lisk Mainnet (Chain ID: 1135)  
 **Currency**: Native ETH  
