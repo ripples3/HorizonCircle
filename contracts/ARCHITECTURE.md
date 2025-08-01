@@ -9,7 +9,7 @@
 │                                                         │
 │  - Tracks all deployed circles                         │
 │  - Manages user memberships                            │
-│  - Industry standard registry pattern                  │
+│  - Industry standard registry pattern                  │cwar
 └────────────────────────┬────────────────────────────────┘
                          │ tracks
                          ▼
