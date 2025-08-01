@@ -1,0 +1,39 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.20;
+
+import "forge-std/Script.sol";
+import "../src/HorizonCircleFactory.sol";
+import "../src/CircleRegistry.sol";
+
+contract DeployFactoryScript is Script {
+    function run() external {
+        // Get private key from environment
+        string memory pkString = vm.envString("PRIVATE_KEY");
+        uint256 deployerPrivateKey = bytes(pkString)[0] == "0" ? 
+            vm.parseUint(pkString) : vm.envUint("PRIVATE_KEY");
+        
+        vm.startBroadcast(deployerPrivateKey);
+        
+        // First deploy the registry if it doesn't exist
+        console.log("Deploying CircleRegistry...");
+        CircleRegistry registry = new CircleRegistry();
+        console.log("CircleRegistry deployed at:", address(registry));
+        
+        // Deploy the factory
+        console.log("Deploying HorizonCircleFactory...");
+        HorizonCircleFactory factory = new HorizonCircleFactory(address(registry));
+        console.log("HorizonCircleFactory deployed at:", address(factory));
+        
+        // Verify deployment
+        console.log("Factory registry address:", address(factory.registry()));
+        console.log("Initial circle count:", factory.getCircleCount());
+        
+        vm.stopBroadcast();
+        
+        // Output for frontend configuration
+        console.log("\n=== FRONTEND CONFIGURATION ===");
+        console.log("Update CONTRACT_ADDRESSES in frontend/src/config/web3.ts:");
+        console.log("REGISTRY:", address(registry));
+        console.log("FACTORY:", address(factory));
+    }
+}

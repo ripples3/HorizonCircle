@@ -22,13 +22,21 @@ export function useUserData() {
         setLoading(true);
         setError(null);
 
-        const walletAddress = privyUser.wallet?.address || `privy-${privyUser.id}`;
+        // Get wallet address from external wallet or embedded wallet
+        const walletAddress = privyUser.linkedAccounts?.find(account => 
+          account.type === 'wallet'
+        )?.address || privyUser.wallet?.address || `privy-${privyUser.id}`;
+        
+        console.log('Fetching user data for address:', walletAddress);
+        console.log('Privy user:', privyUser);
         
         // Try to get existing user
         let user = await db.getUser(walletAddress);
+        console.log('Existing user from DB:', user);
         
         // If user doesn't exist, create one
         if (!user) {
+          console.log('Creating new user in DB...');
           user = await db.upsertUser({
             wallet_address: walletAddress,
             email: privyUser.email?.address,
@@ -37,6 +45,7 @@ export function useUserData() {
             current_loan: 0,
             yield_earned: 0,
           });
+          console.log('Created user:', user);
         }
 
         setUserData(user);
@@ -55,9 +64,15 @@ export function useUserData() {
     if (!userData) return;
 
     try {
+      // Convert from camelCase User type to snake_case database format
       const updatedUser = await db.upsertUser({
-        ...userData,
-        ...updates,
+        wallet_address: userData.walletAddress,
+        email: userData.email,
+        balance: updates.balance ?? userData.balance,
+        available_to_borrow: updates.availableToBorrow ?? userData.availableToBorrow,
+        current_loan: updates.currentLoan ?? userData.currentLoan,
+        yield_earned: updates.yieldEarned ?? userData.yieldEarned,
+        circle_id: updates.circleId ?? userData.circleId,
       });
       setUserData(updatedUser);
       return updatedUser;

@@ -1,0 +1,39 @@
+{
+  "transactions": [
+    {
+      "hash": null,
+      "transactionType": "CALL",
+      "contractName": null,
+      "contractAddress": "0x95e4c63ee7e82b94d75ddbf858f0d2d0600fccdd",
+      "function": "createCircle(string,address[])",
+      "arguments": [
+        "UniversalRouterV2Test",
+        "[0xAFA9CF6c504Ca060B31626879635c049E2De9E1c]"
+      ],
+      "transaction": {
+        "from": "0x1804c8ab1f12e6bbf3894d4083f33e07309d1f38",
+        "to": "0x95e4c63ee7e82b94d75ddbf858f0d2d0600fccdd",
+        "gas": "0xc8b12",
+        "value": "0x0",
+        "input": "0xd1d4f3da000000000000000000000000000000000000000000000000000000000000004000000000000000000000000000000000000000000000000000000000000000800000000000000000000000000000000000000000000000000000000000000015556e6976657273616c526f7574657256325465737400000000000000000000000000000000000000000000000000000000000000000000000000000000000001000000000000000000000000afa9cf6c504ca060b31626879635c049e2de9e1c",
+        "nonce": "0x0",
+        "chainId": "0x46f"
+      },
+      "additionalContracts": [
+        {
+          "transactionType": "CREATE2",
+          "address": "0x135bcd32ec58f04c41a74f2eebc885cc9d8e28b5",
+          "initCode": "0x3d602d80600a3d3981f3363d3d373d3d3d363d73763004ae80080c36ec99ec5f2dc3f2c260638a835af43d82803e903d91602b57fd5bf3"
+        }
+      ],
+      "isFixedGasLimit": false
+    }
+  ],
+  "receipts": [],
+  "libraries": [],
+  "pending": [],
+  "returns": {},
+  "timestamp": 1753980389,
+  "chain": 1135,
+  "commit": "4809a7c"
+}

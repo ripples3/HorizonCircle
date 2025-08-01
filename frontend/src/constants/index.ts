@@ -14,9 +14,9 @@ export const SOCIAL_LENDING_RATE = 0.12; // 12% APR for contributors
 // Lending Configuration
 export const DEFAULT_LTV = 0.85; // 85% Loan-to-Value
 export const MAX_CIRCLE_SIZE = 50;
-export const MIN_DEPOSIT_AMOUNT = 100; // USDC
-export const MAX_DEPOSIT_AMOUNT = 10000; // USDC
+export const MIN_DEPOSIT_AMOUNT = 0.00003; // ETH (~$0.10 USD worth)
+export const MAX_DEPOSIT_AMOUNT = 1000; // ETH - Removed practical max limit for testing
 
 // UI Configuration
-export const CURRENCY_SYMBOL = '$';
-export const TOKEN_SYMBOL = 'USDC';
+export const CURRENCY_SYMBOL = 'Ξ';
+export const TOKEN_SYMBOL = 'ETH';

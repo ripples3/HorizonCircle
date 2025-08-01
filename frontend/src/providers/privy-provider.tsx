@@ -4,13 +4,24 @@ import { PrivyProvider } from '@privy-io/react-auth';
 import { WagmiProvider } from '@privy-io/wagmi';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactNode } from 'react';
-import { wagmiConfig } from '@/config/web3';
+import { wagmiConfig, liskChain } from '@/config/web3';
 
 interface Props {
   children: ReactNode;
 }
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 60000, // 60 seconds - longer cache
+      refetchInterval: false,
+      refetchOnWindowFocus: false,
+      refetchOnMount: false, // Prevent automatic refetch on mount
+      retry: 1, // Reduce retries to prevent loops
+      retryDelay: 5000, // 5 second delay between retries
+    },
+  },
+});
 
 export default function PrivyProviderWrapper({ children }: Props) {
   const privyAppId = process.env.NEXT_PUBLIC_PRIVY_APP_ID;
@@ -55,6 +66,9 @@ export default function PrivyProviderWrapper({ children }: Props) {
         fiatOnRamp: {
           useSandbox: process.env.NODE_ENV === 'development',
         },
+        // Network configuration - force Lisk for embedded wallets
+        supportedChains: [liskChain],
+        defaultChain: liskChain,
       }}
     >
       <QueryClientProvider client={queryClient}>

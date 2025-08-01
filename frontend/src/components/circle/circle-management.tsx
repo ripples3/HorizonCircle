@@ -5,19 +5,53 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Users, Plus, Copy, Share2, Settings, UserPlus, Eye, EyeOff } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Users, Plus, Copy, Share2, Settings, UserPlus, Eye, EyeOff, Edit2, Check, X } from 'lucide-react';
 import { useState } from 'react';
-import { useUserCircles, useCircleName, useCircleMembers } from '@/hooks/useBalance';
+import { useUserCirclesDirect as useUserCircles, useCircleName, useCircleMembers } from '@/hooks/useBalance';
 import { useAccount, useReadContract } from 'wagmi';
 import { useAddMember } from '@/hooks/useTransactions';
 import { CONTRACT_ADDRESSES, CONTRACT_ABIS } from '@/config/web3';
 import CreateCircle from '@/components/circle/create-circle';
+import { useMemberNames, setMemberName } from '@/utils/memberNames';
+
+// Helper component to display individual circle with name in select dropdown
+function CircleSelectItem({ 
+  circleAddress, 
+  index,
+  value
+}: { 
+  circleAddress: string;
+  index: number;
+  value: string;
+}) {
+  const { data: circleName, isLoading } = useCircleName(circleAddress);
+  
+  return (
+    <SelectItem value={value}>
+      <div className="flex items-center gap-2">
+        <Users className="w-4 h-4" />
+        <div className="flex flex-col">
+          <span className="font-medium">
+            {isLoading ? `Circle ${index + 1}` : (circleName || `Circle ${index + 1}`)}
+          </span>
+          <span className="text-xs text-muted-foreground">
+            {circleAddress.slice(0, 6)}...{circleAddress.slice(-4)}
+          </span>
+        </div>
+      </div>
+    </SelectItem>
+  );
+}
 
 export default function CircleManagement() {
   const [showAddMember, setShowAddMember] = useState(false);
   const [memberAddress, setMemberAddress] = useState('');
+  const [memberName, setMemberNameInput] = useState('');
   const [selectedCircleIndex, setSelectedCircleIndex] = useState(0);
   const [showMembersList, setShowMembersList] = useState(false);
+  const [editingMember, setEditingMember] = useState<string | null>(null);
+  const [editingName, setEditingName] = useState('');
   const [notification, setNotification] = useState<{message: string, type: 'success' | 'info'} | null>(null);
   const { address } = useAccount();
   
@@ -28,6 +62,9 @@ export default function CircleManagement() {
   const selectedCircle = hasCircles ? userCircles[selectedCircleIndex] : null;
   const { data: circleName } = useCircleName(selectedCircle || undefined);
   const { data: circleMembers } = useCircleMembers(selectedCircle || undefined);
+  
+  // Get member names for display
+  const memberInfos = useMemberNames(circleMembers || []);
   
   // Check if current user is the creator
   const { data: circleCreator } = useReadContract({
@@ -65,6 +102,34 @@ export default function CircleManagement() {
     showNotification('Address copied to clipboard!', 'success');
   };
 
+  const handleEditName = (memberAddress: string, currentName: string) => {
+    setEditingMember(memberAddress);
+    setEditingName(currentName);
+  };
+
+  const handleSaveName = (memberAddress: string) => {
+    if (editingName.trim()) {
+      setMemberName(memberAddress, editingName.trim());
+      showNotification(`Updated name to "${editingName}"`, 'success');
+    } else {
+      // Remove custom name if empty
+      const customNames = JSON.parse(localStorage.getItem('circle-member-names') || '{}');
+      delete customNames[memberAddress.toLowerCase()];
+      localStorage.setItem('circle-member-names', JSON.stringify(customNames));
+      showNotification('Removed custom name', 'success');
+      
+      // Dispatch custom event to trigger re-renders
+      window.dispatchEvent(new CustomEvent('memberNameUpdated', { detail: { address: memberAddress, name: '' } }));
+    }
+    setEditingMember(null);
+    setEditingName('');
+  };
+
+  const handleCancelEdit = () => {
+    setEditingMember(null);
+    setEditingName('');
+  };
+
   const handleAddMember = async () => {
     if (!isValidAddress(memberAddress)) {
       showNotification('Please enter a valid Ethereum address', 'info');
@@ -73,8 +138,22 @@ export default function CircleManagement() {
     
     try {
       await addMember(memberAddress);
-      showNotification(`Adding member ${memberAddress.slice(0, 10)}...${memberAddress.slice(-4)} to circle`, 'success');
+      
+      // Save custom name if provided - add a small delay to ensure member is added to blockchain first
+      setTimeout(() => {
+        if (memberName.trim()) {
+          setMemberName(memberAddress, memberName.trim());
+        }
+      }, 1000);
+      
+      if (memberName.trim()) {
+        showNotification(`Adding ${memberName} (${memberAddress.slice(0, 6)}...${memberAddress.slice(-4)}) to circle`, 'success');
+      } else {
+        showNotification(`Adding member ${memberAddress.slice(0, 10)}...${memberAddress.slice(-4)} to circle`, 'success');
+      }
+      
       setMemberAddress('');
+      setMemberNameInput('');
       setShowAddMember(false);
     } catch (error) {
       console.error('Failed to add member:', error);
@@ -134,39 +213,43 @@ export default function CircleManagement() {
       {hasCircles && (
         <Card>
           <CardHeader>
-            <CardTitle>Choose Your Circle</CardTitle>
+            <CardTitle className="flex items-center gap-2">
+              <Users className="w-5 h-5" />
+              Choose Your Circle
+            </CardTitle>
             <CardDescription>
               {userCircles.length === 1 
-                ? "You have 1 circle. This is your active circle:" 
+                ? "You have 1 circle. This is your active circle." 
                 : `You have ${userCircles.length} circles. Select one to manage:`
               }
             </CardDescription>
           </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 gap-2">
-              {userCircles.map((circle, index) => (
-                <div key={circle} className="flex items-center space-x-2">
-                  <Button
-                    variant={selectedCircleIndex === index ? "default" : "outline"}
-                    onClick={() => setSelectedCircleIndex(index)}
-                    className="flex-1 justify-start text-left"
-                  >
-                    <Users className="w-4 h-4 mr-2" />
-                    <span className="font-medium">Circle {index + 1}</span>
-                    <span className="ml-2 text-sm opacity-70">
-                      {circle.slice(0, 6)}...{circle.slice(-4)}
-                    </span>
-                  </Button>
-                  {selectedCircleIndex === index && (
-                    <Badge variant="default">Active</Badge>
-                  )}
-                </div>
-              ))}
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="circle-select">Active Circle</Label>
+              <Select 
+                value={selectedCircleIndex.toString()} 
+                onValueChange={(value) => setSelectedCircleIndex(parseInt(value))}
+              >
+                <SelectTrigger id="circle-select" className="w-full">
+                  <SelectValue placeholder="Select a circle" />
+                </SelectTrigger>
+                <SelectContent>
+                  {userCircles.map((circle, index) => (
+                    <CircleSelectItem 
+                      key={circle}
+                      circleAddress={circle}
+                      index={index}
+                      value={index.toString()}
+                    />
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             {userCircles.length > 1 && (
-              <div className="mt-4 p-3 bg-blue-50 rounded-lg">
+              <div className="p-3 bg-blue-50 rounded-lg">
                 <p className="text-sm text-blue-700">
-                  <strong>Tip:</strong> You can switch between circles to manage different savings groups.
+                  <strong>Tip:</strong> Switch between circles to manage different savings groups.
                 </p>
               </div>
             )}
@@ -239,32 +322,78 @@ export default function CircleManagement() {
               <div className="space-y-2 p-3 bg-gray-50 rounded-lg border">
                 <h4 className="text-sm font-medium text-gray-700 mb-2">Circle Members:</h4>
                 <div className="space-y-2">
-                  {circleMembers.map((member: string, index: number) => (
-                    <div key={member} className="flex items-center justify-between p-2 bg-white rounded border">
-                      <div className="flex items-center gap-2">
+                  {memberInfos.map((memberInfo, index) => (
+                    <div key={memberInfo.address} className="flex items-center justify-between p-2 bg-white rounded border">
+                      <div className="flex items-center gap-2 flex-1">
                         <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center">
                           <span className="text-xs font-medium text-blue-600">{index + 1}</span>
                         </div>
-                        <code className="text-xs font-mono text-gray-600">
-                          {member.slice(0, 6)}...{member.slice(-4)}
-                        </code>
-                        {member.toLowerCase() === address?.toLowerCase() && (
-                          <Badge variant="secondary" className="text-xs px-1 py-0">You</Badge>
+                        
+                        {editingMember === memberInfo.address ? (
+                          <div className="flex items-center gap-2 flex-1">
+                            <Input
+                              value={editingName}
+                              onChange={(e) => setEditingName(e.target.value)}
+                              placeholder="Enter member name"
+                              className="text-sm h-8"
+                              autoFocus
+                            />
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleSaveName(memberInfo.address)}
+                              className="p-1 h-8 w-8"
+                            >
+                              <Check className="w-3 h-3 text-green-600" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={handleCancelEdit}
+                              className="p-1 h-8 w-8"
+                            >
+                              <X className="w-3 h-3 text-red-600" />
+                            </Button>
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-2 flex-1">
+                            <div className="flex flex-col">
+                              <button
+                                onClick={() => handleEditName(memberInfo.address, memberInfo.displayName)}
+                                className="text-sm font-medium text-gray-800 hover:text-blue-600 text-left group"
+                              >
+                                {memberInfo.displayName}
+                                <Edit2 className="w-3 h-3 inline ml-1 opacity-0 group-hover:opacity-100" />
+                              </button>
+                              <code className="text-xs font-mono text-gray-500">
+                                {memberInfo.address.slice(0, 6)}...{memberInfo.address.slice(-4)}
+                              </code>
+                            </div>
+                            {memberInfo.address.toLowerCase() === address?.toLowerCase() && (
+                              <Badge variant="secondary" className="text-xs px-1 py-0">You</Badge>
+                            )}
+                            {memberInfo.isCustomName && (
+                              <Badge variant="outline" className="text-xs px-1 py-0">Custom</Badge>
+                            )}
+                          </div>
                         )}
                       </div>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleCopyAddress(member)}
-                        className="p-1 h-auto"
-                      >
-                        <Copy className="w-3 h-3" />
-                      </Button>
+                      
+                      {editingMember !== memberInfo.address && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleCopyAddress(memberInfo.address)}
+                          className="p-1 h-auto"
+                        >
+                          <Copy className="w-3 h-3" />
+                        </Button>
+                      )}
                     </div>
                   ))}
                 </div>
                 <p className="text-xs text-gray-500 mt-2">
-                  Click the copy icon to copy full addresses
+                  Click member names to edit them • Click copy icon to copy addresses
                 </p>
               </div>
             )}
@@ -311,6 +440,20 @@ export default function CircleManagement() {
           ) : (
             <div className="space-y-4">
               <div className="space-y-2">
+                <Label htmlFor="memberName">Member Name (Optional)</Label>
+                <Input
+                  id="memberName"
+                  type="text"
+                  placeholder="Enter a friendly name (e.g., John Smith)"
+                  value={memberName}
+                  onChange={(e) => setMemberNameInput(e.target.value)}
+                />
+                <p className="text-xs text-muted-foreground">
+                  Give this member a name you'll recognize (only visible to you)
+                </p>
+              </div>
+              
+              <div className="space-y-2">
                 <Label htmlFor="memberAddress">Wallet Address</Label>
                 <Input
                   id="memberAddress"
@@ -338,6 +481,7 @@ export default function CircleManagement() {
                   onClick={() => {
                     setShowAddMember(false);
                     setMemberAddress('');
+                    setMemberNameInput('');
                   }}
                 >
                   Cancel

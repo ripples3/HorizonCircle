@@ -1,0 +1,39 @@
+{
+  "transactions": [
+    {
+      "hash": null,
+      "transactionType": "CALL",
+      "contractName": null,
+      "contractAddress": "0x9fd3c93187d675844dd9be2960062a939b81ed06",
+      "function": "createCircle(string,address[])",
+      "arguments": [
+        "DirectCLPoolTest",
+        "[0xAFA9CF6c504Ca060B31626879635c049E2De9E1c]"
+      ],
+      "transaction": {
+        "from": "0x1804c8ab1f12e6bbf3894d4083f33e07309d1f38",
+        "to": "0x9fd3c93187d675844dd9be2960062a939b81ed06",
+        "gas": "0xbd83a",
+        "value": "0x0",
+        "input": "0xd1d4f3da000000000000000000000000000000000000000000000000000000000000004000000000000000000000000000000000000000000000000000000000000000800000000000000000000000000000000000000000000000000000000000000010446972656374434c506f6f6c54657374000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001000000000000000000000000afa9cf6c504ca060b31626879635c049e2de9e1c",
+        "nonce": "0x0",
+        "chainId": "0x46f"
+      },
+      "additionalContracts": [
+        {
+          "transactionType": "CREATE2",
+          "address": "0xc3519cf146c4cdecdba37f5c09b80a352ba1f94f",
+          "initCode": "0x3d602d80600a3d3981f3363d3d373d3d3d363d73d61bf891484f9ab5cfbef7c23c7d77d7e3ce52975af43d82803e903d91602b57fd5bf3"
+        }
+      ],
+      "isFixedGasLimit": false
+    }
+  ],
+  "receipts": [],
+  "libraries": [],
+  "pending": [],
+  "returns": {},
+  "timestamp": 1753980023,
+  "chain": 1135,
+  "commit": "4809a7c"
+}
