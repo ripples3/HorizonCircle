@@ -43,11 +43,11 @@ WETH Withdrawal → wstETH Swap → Morpho Lending → ETH Transfer to Borrower
 
 | Component | Contract | Address | Status |
 |-----------|----------|---------|---------|
-| **Circle Creation** | HorizonCircleFactory | `0x95e4c63Ee7e82b94D75dDbF858F0D2D0600fcCdD` | ✅ Working (7+ circles) |
-| **Circle Logic** | HorizonCircleWithMorphoAuth | `0x763004aE80080C36ec99eC5f2dc3F2C260638A83` | ✅ Working (48KB bytecode) |
-| **Discovery** | CircleRegistry | `0x68Dc6FeBA312BF9B7BfBe096EA5e7ccb61a522dE` | ✅ Working |
-| **Loan Execution** | LendingModule | `0xE5B8B9230BF53288e00ea4Fd2b17868cC6621801` | ✅ Working (funded) |
-| **Yield Generation** | Morpho WETH Vault | `0x7Cbaa98bd5e171A658FdF761ED1Db33806a0d346` | ✅ Working (~5% APY) |
+| **Circle Creation** | HorizonCircleFactory | `0x95e4c63Ee7e82b94D75dDbF858F0D2D0600fcCdD` |
+| **Circle Logic** | HorizonCircleWithMorphoAuth | `0x763004aE80080C36ec99eC5f2dc3F2C260638A83` | 
+| **Discovery** | CircleRegistry | `0x68Dc6FeBA312BF9B7BfBe096EA5e7ccb61a522dE` |
+| **Loan Execution** | LendingModule | `0xE5B8B9230BF53288e00ea4Fd2b17868cC6621801` |
+| **Yield Generation** | Morpho WETH Vault | `0x7Cbaa98bd5e171A658FdF761ED1Db33806a0d346` |
 
 **Network**: Lisk Mainnet (Chain ID: 1135)  
 **Currency**: Native ETH  
