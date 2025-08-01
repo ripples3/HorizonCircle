@@ -13,12 +13,11 @@ interface Props {
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 60000, // 60 seconds - longer cache
+      staleTime: 30000, // 30 seconds
       refetchInterval: false,
       refetchOnWindowFocus: false,
-      refetchOnMount: false, // Prevent automatic refetch on mount
-      retry: 1, // Reduce retries to prevent loops
-      retryDelay: 5000, // 5 second delay between retries
+      retry: 2,
+      retryDelay: 3000,
     },
   },
 });
@@ -56,15 +55,12 @@ export default function PrivyProviderWrapper({ children }: Props) {
           theme: 'light',
           accentColor: '#3B82F6',
         },
-        // Set up login methods
-        loginMethods: ['email', 'google', 'wallet'],
-        // Set up embedded wallet
+        // Optimize login methods for faster loading
+        loginMethods: ['wallet', 'email'],
+        // Simplified embedded wallet config
         embeddedWallets: {
           createOnLogin: 'users-without-wallets',
-        },
-        // Set up fiat on-ramp
-        fiatOnRamp: {
-          useSandbox: process.env.NODE_ENV === 'development',
+          noPromptOnSignature: true,
         },
         // Network configuration - force Lisk for embedded wallets
         supportedChains: [liskChain],

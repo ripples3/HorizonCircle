@@ -214,7 +214,6 @@ export default function BorrowerRequests() {
   const publicClient = usePublicClient();
   const [borrowerRequests, setBorrowerRequests] = React.useState<BorrowerRequest[]>([]);
   const [isLoading, setIsLoading] = React.useState(true);
-  const [debugInfo, setDebugInfo] = React.useState<any>(null);
   const [allRespondedRequests, setAllRespondedRequests] = React.useState<Set<string>>(new Set());
   
   // Hook for executing loan requests
@@ -228,18 +227,6 @@ export default function BorrowerRequests() {
   } = useExecuteRequest();
   const [lastRefresh, setLastRefresh] = React.useState(Date.now());
 
-  // Debug: Check sessionStorage on mount and updates
-  React.useEffect(() => {
-    const loans = JSON.parse(sessionStorage.getItem('userActiveLoans') || '[]');
-    setDebugInfo({
-      sessionStorageLoans: loans,
-      timestamp: new Date().toISOString()
-    });
-    console.log('🔍 Debug info updated:', {
-      sessionStorageLoans: loans,
-      borrowerRequestsCount: borrowerRequests.length
-    });
-  }, [lastRefresh]); // Removed borrowerRequests dependency to prevent infinite loop
 
   React.useEffect(() => {
     async function fetchBorrowerRequests() {
@@ -735,8 +722,8 @@ export default function BorrowerRequests() {
 
   return (
     <>
-      {/* Debug Information */}
-      {debugInfo && (
+      {/* Debug Information - Removed for production */}
+      {false && (
         <Card className="mb-4 border-yellow-200 bg-yellow-50">
           <CardHeader>
             <CardTitle className="text-sm text-yellow-800">Debug Info</CardTitle>
@@ -830,32 +817,32 @@ export default function BorrowerRequests() {
         </Card>
       )}
       
-      <Card>
-      <CardHeader>
+      <Card className="glass-card-light border-soft rounded-cow">
+      <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
-          <CardTitle className="flex items-center gap-2">
-            <Clock className="w-5 h-5" />
-            Your Collateral Requests ({borrowerRequests.length})
+          <CardTitle className="flex items-center gap-2 text-lg">
+            <Clock className="w-4 h-4" />
+            Collateral Requests ({borrowerRequests.length})
           </CardTitle>
           <Button
             variant="ghost"
             size="sm"
             onClick={handleRefresh}
             disabled={isLoading}
-            className="gap-2"
+            className="gap-1 h-8 px-2 text-xs"
           >
-            <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
+            <RefreshCw className={`w-3 h-3 ${isLoading ? 'animate-spin' : ''}`} />
             Refresh
           </Button>
         </div>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-2 pt-0">
         {borrowerRequests.map((request) => (
           <div
             key={request.id}
-            className="p-4 border border-blue-200 rounded-lg bg-blue-50"
+            className="p-3 border border-soft rounded-cow glass-subtle"
           >
-            <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center justify-between mb-2">
               <div>
                 <div className="flex items-center gap-2">
                   <span className="font-medium text-blue-900">
@@ -871,12 +858,12 @@ export default function BorrowerRequests() {
                      'Pending'}
                   </Badge>
                 </div>
-                <p className="text-xs text-blue-600 mt-1">
+                <p className="text-xs text-muted-foreground mt-1">
                   Requested from {request.contributors.length} member{request.contributors.length !== 1 ? 's' : ''}
                 </p>
               </div>
               <div className="text-right">
-                <div className="text-sm font-medium text-blue-900">
+                <div className="text-sm font-medium text-primary">
                   {request.totalContributed > 0 ? (
                     <>
                       {CURRENCY_SYMBOL}{request.totalContributed.toFixed(8)} / {CURRENCY_SYMBOL}{request.amount.toFixed(8)}
@@ -887,7 +874,7 @@ export default function BorrowerRequests() {
                     </>
                   )}
                 </div>
-                <p className="text-xs text-blue-600">
+                <p className="text-xs text-muted-foreground">
                   {request.fulfilled && !request.executed ? 'Ready to execute loan!' : 
                    request.fulfilled && request.executed ? 'Loan executed' :
                    request.totalContributed > 0 ? `${((request.totalContributed / request.amount) * 100).toFixed(1)}% funded` :

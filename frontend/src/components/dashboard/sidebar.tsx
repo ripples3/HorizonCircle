@@ -2,6 +2,7 @@
 
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
+import { Logo } from '@/components/ui/logo';
 import { APP_NAME } from '@/constants';
 import { 
   Home, 
@@ -46,15 +47,10 @@ export default function Sidebar({ className, activeTab, onTabChange, hasCircles 
     return true;
   });
   return (
-    <div className={cn("flex flex-col h-full w-64 bg-white border-r border-gray-200", className)}>
+    <div className={cn("flex flex-col h-full w-64 bg-card border-r border-border", className)}>
       {/* Header */}
-      <div className="p-6 border-b border-gray-200">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-            <PiggyBank className="w-5 h-5 text-white" />
-          </div>
-          <h1 className="text-xl font-semibold text-gray-900">{APP_NAME}</h1>
-        </div>
+      <div className="p-6 border-b border-border">
+        <Logo size="md" className="" />
       </div>
 
       {/* Navigation */}
@@ -67,8 +63,8 @@ export default function Sidebar({ className, activeTab, onTabChange, hasCircles 
                 key={item.id}
                 variant={activeTab === item.id ? "default" : "ghost"}
                 className={cn(
-                  "w-full justify-start gap-3 h-12 px-4",
-                  activeTab === item.id && "bg-blue-600 text-white hover:bg-blue-700"
+                  "w-full justify-start gap-3 h-12 px-4 rounded-cow",
+                  activeTab === item.id && "bg-primary text-primary-foreground hover:bg-primary/90"
                 )}
                 onClick={() => onTabChange(item.id)}
               >
@@ -81,7 +77,7 @@ export default function Sidebar({ className, activeTab, onTabChange, hasCircles 
       </nav>
 
       {/* Bottom Section */}
-      <div className="p-4 border-t border-gray-200">
+      <div className="p-4 border-t border-border">
         <div className="space-y-2">
           {bottomItems.map((item) => {
             const Icon = item.icon;
@@ -90,8 +86,8 @@ export default function Sidebar({ className, activeTab, onTabChange, hasCircles 
                 key={item.id}
                 variant={activeTab === item.id ? "default" : "ghost"}
                 className={cn(
-                  "w-full justify-start gap-3 h-12 px-4",
-                  activeTab === item.id && "bg-blue-600 text-white hover:bg-blue-700"
+                  "w-full justify-start gap-3 h-12 px-4 rounded-cow",
+                  activeTab === item.id && "bg-primary text-primary-foreground hover:bg-primary/90"
                 )}
                 onClick={() => onTabChange(item.id)}
               >

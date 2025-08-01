@@ -20,11 +20,10 @@ import { useUserCirclesDirect as useUserCircles, useAggregatedUserData, useCircl
 import { formatEther } from 'viem';
 import { useAccount } from 'wagmi';
 import CreateCircle from '@/components/circle/create-circle';
-import { NotificationTest } from '@/components/notification-test';
 import { RepayForm } from '@/components/lending/repay-form';
 
-// Individual circle display component  
-function CircleDisplay({ circleAddress, index }: { circleAddress: string, index: number }) {
+// Individual circle display component with React.memo for performance
+const CircleDisplay = React.memo(({ circleAddress, index }: { circleAddress: string, index: number }) => {
   const { address } = useAccount();
   const { data: circleName, isLoading: nameLoading } = useCircleName(circleAddress);
   const { data: userBalance, isLoading: balanceLoading } = useUserCircleBalance(address, circleAddress);
@@ -32,55 +31,54 @@ function CircleDisplay({ circleAddress, index }: { circleAddress: string, index:
   // Get the user's actual balance from smart contract
   const balanceInEth = userBalance ? parseFloat(formatEther(userBalance)) : 0;
   
-  // Memoize the balance display to prevent re-renders
-  const balanceDisplay = React.useMemo(() => ({
-    circleAddress,
-    balanceInEth,
-    isLoading: balanceLoading
-  }), [circleAddress, balanceInEth, balanceLoading]);
+  // Memoize expensive calculations
+  const calculations = React.useMemo(() => ({
+    balanceFormatted: `${CURRENCY_SYMBOL}${balanceInEth.toFixed(8)}`,
+    availableFormatted: `${CURRENCY_SYMBOL}${(balanceInEth * 0.85).toFixed(8)}`
+  }), [balanceInEth]);
   
   return (
-    <div className="p-3 border rounded-lg bg-purple-50 border-purple-200">
+    <div className="p-2 border rounded-cow glass-subtle border-soft animate-gentle-scale">
       <div className="flex items-center justify-between mb-2">
         <div>
-          <div className="font-medium text-purple-900">
+          <div className="font-medium text-primary text-sm">
             {nameLoading ? `Circle ${index + 1}` : (circleName || `Circle ${index + 1}`)}
           </div>
-          <div className="text-xs text-purple-600">
+          <div className="text-xs text-accent">
             {circleAddress.slice(0, 6)}...{circleAddress.slice(-4)}
           </div>
         </div>
         <div className="text-right">
-          <div className="text-sm font-medium text-purple-900">
-            {balanceLoading ? 'Loading...' : `${CURRENCY_SYMBOL}${balanceInEth.toFixed(8)}`}
+          <div className="text-sm font-medium text-primary">
+            {balanceLoading ? 'Loading...' : calculations.balanceFormatted}
           </div>
-          <div className="text-xs text-purple-600">
-            Available: {CURRENCY_SYMBOL}{(balanceInEth * 0.85).toFixed(8)}
+          <div className="text-xs text-accent">
+            Available: {calculations.availableFormatted}
           </div>
         </div>
       </div>
       
-      <div className="grid grid-cols-3 gap-2 text-xs">
+      <div className="grid grid-cols-3 gap-1 text-xs mt-1">
         <div>
-          <span className="text-purple-600">Balance:</span>
-          <div className="font-medium">
-            {balanceLoading ? 'Loading...' : `${CURRENCY_SYMBOL}${balanceInEth.toFixed(8)}`}
+          <span className="text-accent">Balance:</span>
+          <div className="font-medium text-xs">
+            {balanceLoading ? 'Loading...' : calculations.balanceFormatted}
           </div>
         </div>
         <div>
-          <span className="text-purple-600">Yield:</span>
-          <div className="font-medium text-green-600">
+          <span className="text-accent">Yield:</span>
+          <div className="font-medium text-green-600 text-xs">
             +{CURRENCY_SYMBOL}0.00000000
           </div>
         </div>
         <div>
-          <span className="text-purple-600">Growth:</span>
-          <div className="font-medium">0.00%</div>
+          <span className="text-accent">Growth:</span>
+          <div className="font-medium text-xs">0.00%</div>
         </div>
       </div>
     </div>
   );
-}
+});
 
 interface DashboardContentProps {
   user?: {
@@ -95,7 +93,7 @@ interface DashboardContentProps {
   onCreateCircle?: () => void;
 }
 
-export default function DashboardContent({ 
+const DashboardContent = React.memo(({ 
   user = {
     balance: 0,
     availableToBorrow: 0,
@@ -106,12 +104,15 @@ export default function DashboardContent({
   onBorrow,
   onViewCircle,
   onCreateCircle
-}: DashboardContentProps) {
-  // Check if user has any circles
+}: DashboardContentProps) => {
+  // Check if user has any circles - but don't block dashboard render
   const { data: userCircles, isLoading: circlesLoading, error: circlesError } = useUserCircles();
   const hasCircles = userCircles && Array.isArray(userCircles) && userCircles.length > 0;
   
-  // Get aggregated data across all circles
+  // Load data immediately but show progressive UI
+  const [shouldLoadData, setShouldLoadData] = React.useState(true);
+  
+  // Get aggregated data only after initial render
   const { data: aggregatedData, isLoading: dataLoading } = useAggregatedUserData();
   
   // Track active loans from sessionStorage
@@ -172,14 +173,8 @@ export default function DashboardContent({
     ((BORROWING_RATE * user.currentLoan) - (BASE_YIELD_RATE * user.balance)) / user.currentLoan : 
     0;
 
-  // Show loading while checking circles or data
-  if (circlesLoading || dataLoading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-      </div>
-    );
-  }
+  // Show dashboard shell immediately, load data progressively
+  const showLoader = circlesLoading && !shouldLoadData;
 
   // Show circle creation if user has no circles OR if there's an RPC error
   if (circleStatus.shouldShowCreate) {
@@ -204,19 +199,19 @@ export default function DashboardContent({
   }
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-4 space-y-4">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">Dashboard</h2>
-          <p className="text-gray-600 mt-1">Welcome back to your financial overview</p>
+          <h2 className="text-xl font-bold text-foreground">Dashboard</h2>
+          <p className="text-muted-foreground text-sm">Welcome back to your financial overview</p>
         </div>
         <div className="flex gap-2">
-          <Button onClick={onDeposit} className="gap-2">
+          <Button onClick={onDeposit} className="gap-2 btn-interactive">
             <PiggyBank className="w-4 h-4" />
             Earn
           </Button>
-          <Button onClick={onBorrow} variant="outline" className="gap-2">
+          <Button onClick={onBorrow} variant="outline" className="gap-2 btn-interactive">
             <CreditCard className="w-4 h-4" />
             Borrow
           </Button>
@@ -224,15 +219,18 @@ export default function DashboardContent({
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <Card className="glass-card-light border-soft rounded-cow card-hover animate-stagger-in">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1">
             <CardTitle className="text-sm font-medium">ETH Balance</CardTitle>
             <Coins className="w-4 h-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
-              {dataLoading ? 'Loading...' : `${CURRENCY_SYMBOL}${aggregatedData?.totalBalance?.toFixed(8) || '0.00000000'}`}
+            <div className="text-xl font-bold">
+              {dataLoading ? 
+                `${CURRENCY_SYMBOL}0.00000000` :
+                `${CURRENCY_SYMBOL}${aggregatedData?.totalBalance?.toFixed(8) || '0.00000000'}`
+              }
             </div>
             <p className="text-xs text-muted-foreground">
               Earning {(BASE_YIELD_RATE * 100).toFixed(1)}% APY
@@ -240,14 +238,17 @@ export default function DashboardContent({
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <Card className="glass-card-light border-soft rounded-cow card-hover animate-stagger-in animate-stagger-1">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1">
             <CardTitle className="text-sm font-medium">Available to Borrow</CardTitle>
             <CreditCard className="w-4 h-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
-              {dataLoading ? 'Loading...' : `${CURRENCY_SYMBOL}${aggregatedData?.totalAvailableToBorrow?.toFixed(8) || '0.00000000'}`}
+            <div className="text-xl font-bold">
+              {dataLoading ? 
+                `${CURRENCY_SYMBOL}0.00000000` :
+                `${CURRENCY_SYMBOL}${aggregatedData?.totalAvailableToBorrow?.toFixed(8) || '0.00000000'}`
+              }
             </div>
             <p className="text-xs text-muted-foreground">
               At 0.0% effective rate
@@ -255,14 +256,17 @@ export default function DashboardContent({
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <Card className="glass-card-light border-soft rounded-cow card-hover animate-stagger-in animate-stagger-2">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1">
             <CardTitle className="text-sm font-medium">Current Loans</CardTitle>
             <ArrowDownRight className="w-4 h-4 text-red-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
-              {dataLoading ? 'Loading...' : `${CURRENCY_SYMBOL}${aggregatedData?.totalCurrentLoans?.toFixed(8) || '0.00000000'}`}
+            <div className="text-xl font-bold">
+              {dataLoading ? 
+                `${CURRENCY_SYMBOL}0.00000000` :
+                `${CURRENCY_SYMBOL}${aggregatedData?.totalCurrentLoans?.toFixed(8) || '0.00000000'}`
+              }
             </div>
             <p className="text-xs text-muted-foreground">
               {(aggregatedData?.totalCurrentLoans || 0) > 0 ? (
@@ -284,14 +288,17 @@ export default function DashboardContent({
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <Card className="glass-card-light border-soft rounded-cow card-hover animate-stagger-in animate-stagger-3">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1">
             <CardTitle className="text-sm font-medium">Yield Earned</CardTitle>
             <ArrowUpRight className="w-4 h-4 text-green-500" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-green-600">
-              {dataLoading ? 'Loading...' : `+${CURRENCY_SYMBOL}${aggregatedData?.totalYieldEarned?.toFixed(8) || '0.00000000'}`}
+              {dataLoading ? 
+                `+${CURRENCY_SYMBOL}0.00000000` :
+                `+${CURRENCY_SYMBOL}${aggregatedData?.totalYieldEarned?.toFixed(8) || '0.00000000'}`
+              }
             </div>
             <p className="text-xs text-muted-foreground">
               Total earned this month
@@ -301,12 +308,12 @@ export default function DashboardContent({
       </div>
 
       {/* Main Content Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* Rate Overview */}
-        <Card>
+        <Card className="glass-card-light border-soft rounded-cow card-hover animate-stagger-in">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <TrendingUp className="w-5 h-5 text-blue-600" />
+              <TrendingUp className="w-5 h-5 text-primary" />
               Rate Overview
             </CardTitle>
             <CardDescription>
@@ -322,13 +329,13 @@ export default function DashboardContent({
             </div>
             <div className="flex justify-between items-center">
               <span className="text-sm font-medium">Borrowing Rate</span>
-              <Badge variant="secondary" className="text-blue-600">
+              <Badge variant="secondary" className="text-accent">
                 {(BORROWING_RATE * 100).toFixed(1)}% APR
               </Badge>
             </div>
             <div className="flex justify-between items-center">
               <span className="text-sm font-medium">Your Effective Rate</span>
-              <Badge variant="secondary" className="text-purple-600">
+              <Badge variant="secondary" className="text-primary">
                 {(effectiveRate * 100).toFixed(1)}% APR
               </Badge>
             </div>
@@ -340,10 +347,10 @@ export default function DashboardContent({
         </Card>
 
         {/* Circle Breakdown */}
-        <Card>
+        <Card className="glass-card-light border-soft rounded-cow card-hover animate-stagger-in">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Users className="w-5 h-5 text-purple-600" />
+              <Users className="w-5 h-5 text-primary" />
               Your Circles ({userCircles?.length || 0})
             </CardTitle>
             <CardDescription>
@@ -351,7 +358,7 @@ export default function DashboardContent({
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            {userCircles && userCircles.length > 0 ? (
+            {shouldLoadData && userCircles && userCircles.length > 0 ? (
               <>
                 {userCircles.map((circleAddress, index) => (
                   <CircleDisplay key={circleAddress} circleAddress={circleAddress} index={index} />
@@ -361,11 +368,17 @@ export default function DashboardContent({
                   variant="outline" 
                   className="w-full gap-2"
                   onClick={onViewCircle}
+                  className="btn-interactive"
                 >
                   <Users className="w-4 h-4" />
                   Manage Circles
                 </Button>
               </>
+            ) : !shouldLoadData ? (
+              <div className="space-y-3">
+                <div className="animate-pulse bg-gray-100 h-16 rounded-lg"></div>
+                <div className="animate-pulse bg-gray-100 h-8 w-32 rounded mx-auto"></div>
+              </div>
             ) : (
               <>
                 <div className="text-center py-4 text-muted-foreground">
@@ -377,6 +390,7 @@ export default function DashboardContent({
                   variant="outline" 
                   className="w-full gap-2"
                   onClick={onViewCircle}
+                  className="btn-interactive"
                 >
                   <Users className="w-4 h-4" />
                   Create or Join Circle
@@ -388,7 +402,7 @@ export default function DashboardContent({
 
         {/* Active Loans Management */}
         {activeLoans.length > 0 && (
-          <Card>
+          <Card className="glass-card-light border-soft rounded-cow card-hover animate-stagger-in">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <DollarSign className="w-5 h-5 text-orange-600" />
@@ -400,7 +414,7 @@ export default function DashboardContent({
             </CardHeader>
             <CardContent className="space-y-4">
               {activeLoans.map((loan, index) => (
-                <div key={loan.id || index} className="p-3 border rounded-lg bg-orange-50 border-orange-200">
+                <div key={loan.id || index} className="p-3 border rounded-cow glass-subtle border-soft">
                   <div className="flex items-center justify-between mb-2">
                     <div>
                       <div className="font-medium text-orange-900">
@@ -415,13 +429,13 @@ export default function DashboardContent({
                     </Badge>
                   </div>
                   
-                  <div className="text-xs text-orange-600 mb-3">
+                  <div className="text-xs text-accent mb-3">
                     <div><strong>Purpose:</strong> {loan.purpose || 'N/A'}</div>
                     <div><strong>Started:</strong> {loan.startTime ? new Date(loan.startTime).toLocaleDateString() : 'N/A'}</div>
                   </div>
 
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-orange-700">Ready to repay?</span>
+                    <span className="text-sm text-accent">Ready to repay?</span>
                     <Button
                       size="sm"
                       variant={showRepayForm === loan.id ? "outline" : "default"}
@@ -448,12 +462,10 @@ export default function DashboardContent({
           </Card>
         )}
         
-        {/* Debug Panel - Remove in production */}
-        <NotificationTest />
       </div>
 
       {/* Recent Transactions */}
-      <Card>
+      <Card className="glass-card-light border-soft rounded-cow animate-gentle-scale">
         <CardHeader>
           <CardTitle>Recent Activity</CardTitle>
           <CardDescription>
@@ -470,4 +482,6 @@ export default function DashboardContent({
       </Card>
     </div>
   );
-}
+});
+
+export default DashboardContent;

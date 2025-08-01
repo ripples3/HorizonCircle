@@ -1,12 +1,14 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, lazy, Suspense } from 'react';
 import { usePrivy } from '@privy-io/react-auth';
 import Sidebar from './sidebar';
-import DashboardContent from './dashboard-content';
-import DepositForm from '@/components/lending/deposit-form';
-import BorrowForm from '@/components/lending/borrow-form';
-import { DirectLTVWithdraw } from '@/components/lending/direct-ltv-withdraw';
+
+// Lazy load heavy components
+const DashboardContent = lazy(() => import('./dashboard-content'));
+const DepositForm = lazy(() => import('@/components/lending/deposit-form'));
+const BorrowForm = lazy(() => import('@/components/lending/borrow-form'));
+const DirectLTVWithdraw = lazy(() => import('@/components/lending/direct-ltv-withdraw').then(mod => ({ default: mod.DirectLTVWithdraw })));
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useUserData } from '@/hooks/useUserData';
@@ -16,9 +18,10 @@ import { useRequestCollateral } from '@/hooks/useTransactions';
 import { formatEther } from 'viem';
 import { LISK_CHAIN_ID } from '@/constants';
 import CircleManagement from '@/components/circle/circle-management';
-// Re-enabling components with on-chain decline functionality
-import CollateralRequests from '@/components/lending/collateral-requests';
-import BorrowerRequests from '@/components/lending/borrower-requests';
+import CollateralNotification from '@/components/dashboard/collateral-notification';
+// Lazy load heavy notification components  
+const BorrowerRequests = lazy(() => import('@/components/lending/borrower-requests'));
+const CollateralRequests = lazy(() => import('@/components/lending/collateral-requests'));
 
 export default function DashboardLayout() {
   const { user, logout } = usePrivy();
@@ -113,11 +116,11 @@ export default function DashboardLayout() {
   // Simplified loading state - use improved wallet detection
   if (!isWalletConnected || !walletAddress) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Connecting wallet...</p>
-          <p className="text-xs text-gray-500 mt-2">
+      <div className="min-h-screen bg-gradient-light flex items-center justify-center p-4">
+        <div className="text-center glass-subtle p-8 rounded-cow-lg">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-foreground">Connecting wallet...</p>
+          <p className="text-xs text-muted-foreground mt-2">
             Wagmi: {isConnected ? 'connected' : 'disconnected'} | Privy: {!!user?.wallet?.address ? 'wallet ready' : 'no wallet'}
           </p>
         </div>
@@ -149,7 +152,7 @@ export default function DashboardLayout() {
         if (loading) {
           return (
             <div className="flex items-center justify-center h-64">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
             </div>
           );
         }
@@ -220,39 +223,56 @@ export default function DashboardLayout() {
                 </p>
               </div>
             )}
-            <CollateralRequests />
-            <BorrowerRequests />
-            <DashboardContent
-              user={{
-                balance: realBalance, // Use real blockchain balance instead of DB balance
-                availableToBorrow: realBalance * 0.85, // 85% LTV from constants
-                currentLoan: activeLoanAmount, // Real loan amount from executed loans
-                yieldEarned: userData?.yieldEarned || 0 // Database field or 0 if DB unavailable
-              }}
-              onDeposit={handleDeposit}
-              onBorrow={handleBorrow}
-              onViewCircle={handleViewCircle}
-              onCreateCircle={handleCreateCircle}
-            />
+            {/* Simple notification for collateral requests */}
+            <CollateralNotification onNavigateToBorrow={() => setActiveTab('borrow')} />
+            
+            {/* Defer heavy notifications until after dashboard loads */}
+            <Suspense fallback={<div className="p-2 animate-pulse bg-muted rounded-cow text-xs">Loading notifications...</div>}>
+              <div className="space-y-2">
+                <BorrowerRequests />
+              </div>
+            </Suspense>
+            <Suspense fallback={<div className="animate-pulse h-96 bg-gray-100 rounded-lg" />}>
+              <DashboardContent
+                user={{
+                  balance: realBalance,
+                  availableToBorrow: realBalance * 0.85,
+                  currentLoan: activeLoanAmount,
+                  yieldEarned: userData?.yieldEarned || 0
+                }}
+                onDeposit={handleDeposit}
+                onBorrow={handleBorrow}
+                onViewCircle={handleViewCircle}
+                onCreateCircle={handleCreateCircle}
+              />
+            </Suspense>
           </div>
         );
       case 'deposit':
         return (
           <div className="p-6 flex justify-center">
-            <DepositForm
-              onSuccess={(_amount) => {
-                // Deposit successful
-                setActiveTab('dashboard');
-              }}
-              onCancel={() => setActiveTab('dashboard')}
-            />
+            <Suspense fallback={<div className="animate-pulse h-64 w-96 bg-gray-100 rounded-lg" />}>
+              <DepositForm
+                onSuccess={(_amount) => {
+                  setActiveTab('dashboard');
+                }}
+                onCancel={() => setActiveTab('dashboard')}
+              />
+            </Suspense>
           </div>
         );
       case 'borrow':
         return (
-          <div className="p-6 flex justify-center">
-            <div className="w-full max-w-4xl">
-              {/* Transaction Status Display */}
+          <div className="p-6">
+            <div className="space-y-6">
+              {/* Collateral Requests Section */}
+              <Suspense fallback={<div className="p-2 animate-pulse bg-muted rounded-cow text-xs">Loading collateral requests...</div>}>
+                <CollateralRequests />
+              </Suspense>
+              
+              <div className="flex justify-center">
+                <div className="w-full max-w-4xl">
+                  {/* Transaction Status Display */}
               {(isRequestingCollateral || isConfirmingRequest) && (
                 <Card className="mb-4 border-blue-200 bg-blue-50">
                   <CardContent className="p-4">
@@ -274,12 +294,12 @@ export default function DashboardLayout() {
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Social Lending (Traditional) */}
-                <BorrowForm
-                  onSuccess={(_amount) => {
-                    // Borrow successful
-                    setActiveTab('dashboard');
-                  }}
-                  onCancel={() => setActiveTab('dashboard')}
+                <Suspense fallback={<div className="animate-pulse h-96 bg-gray-100 rounded-lg" />}>
+                  <BorrowForm
+                    onSuccess={(_amount) => {
+                      setActiveTab('dashboard');
+                    }}
+                    onCancel={() => setActiveTab('dashboard')}
                   onRequestHelp={async (borrowAmount: number, collateralAmount: number, circleAddress: string, contributors: { address: string; amount: number; selected: boolean }[]) => {
                     // Help requested for collateral
                     
@@ -310,13 +330,18 @@ export default function DashboardLayout() {
                     }
                   }}
                 />
+                </Suspense>
 
                 {/* Direct LTV Withdrawal (New) */}
                 {hasCircles && userCircles && userCircles.length > 0 && (
-                  <DirectLTVWithdraw 
-                    circleAddress={userCircles[0]} // Use first circle for now
-                  />
+                  <Suspense fallback={<div className="animate-pulse h-96 bg-gray-100 rounded-lg" />}>
+                    <DirectLTVWithdraw 
+                      circleAddress={userCircles[0]}
+                    />
+                  </Suspense>
                 )}
+              </div>
+                </div>
               </div>
             </div>
           </div>
@@ -412,16 +437,23 @@ export default function DashboardLayout() {
       default:
         return (
           <DashboardContent
+            user={{
+              balance: realBalance,
+              availableToBorrow: realBalance * 0.85,
+              currentLoan: activeLoanAmount,
+              yieldEarned: userData?.yieldEarned || 0
+            }}
             onDeposit={handleDeposit}
             onBorrow={handleBorrow}
             onViewCircle={handleViewCircle}
+            onCreateCircle={handleCreateCircle}
           />
         );
     }
   };
 
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className="flex h-screen bg-background">
       <Sidebar 
         activeTab={activeTab} 
         onTabChange={setActiveTab}

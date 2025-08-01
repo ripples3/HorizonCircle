@@ -202,10 +202,10 @@ export default function CollateralRequests() {
   // Show loading state
   if (requestsLoading) {
     return (
-      <Card className="border-dashed">
-        <CardContent className="pt-6">
-          <div className="text-center text-sm text-muted-foreground py-4">
-            <Bell className="w-6 h-6 mx-auto mb-2 opacity-30" />
+      <Card className="border-dashed glass-subtle">
+        <CardContent className="pt-3 pb-3">
+          <div className="text-center text-sm text-muted-foreground py-2">
+            <Bell className="w-4 h-4 mx-auto mb-1 opacity-30" />
             <p className="text-xs">Loading collateral requests...</p>
           </div>
         </CardContent>
@@ -216,10 +216,10 @@ export default function CollateralRequests() {
   // Show error state
   if (requestsError) {
     return (
-      <Card className="border-dashed border-red-200">
-        <CardContent className="pt-6">
-          <div className="text-center text-sm text-red-600 py-4">
-            <Bell className="w-6 h-6 mx-auto mb-2 opacity-30" />
+      <Card className="border-dashed border-red-200 glass-subtle">
+        <CardContent className="pt-3 pb-3">
+          <div className="text-center text-sm text-red-600 py-2">
+            <Bell className="w-4 h-4 mx-auto mb-1 opacity-30" />
             <p className="text-xs">Error loading requests: {requestsError.message}</p>
           </div>
         </CardContent>
@@ -229,16 +229,16 @@ export default function CollateralRequests() {
 
   if (displayRequests.length === 0) {
     return (
-      <Card className="border-dashed">
-        <CardContent className="pt-6">
-          <div className="text-center text-sm text-muted-foreground py-4">
-            <Bell className="w-6 h-6 mx-auto mb-2 opacity-30" />
+      <Card className="border-dashed glass-subtle">
+        <CardContent className="pt-3 pb-3">
+          <div className="text-center text-sm text-muted-foreground py-2">
+            <Bell className="w-4 h-4 mx-auto mb-1 opacity-30" />
             <p className="text-xs">No pending collateral requests</p>
             <Button
               variant="ghost"
               size="sm"
               onClick={() => refetch()}
-              className="mt-2 text-xs"
+              className="mt-1 text-xs h-6 px-2"
             >
               <RefreshCw className="w-3 h-3 mr-1" />
               Refresh
@@ -250,24 +250,24 @@ export default function CollateralRequests() {
   }
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-2">
       {displayRequests.map((request) => (
-        <Card key={request.id} className="border-orange-200 bg-gradient-to-r from-orange-50 to-amber-50">
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between mb-3">
+        <Card key={request.id} className="glass-subtle border-soft rounded-cow">
+          <CardContent className="p-3">
+            <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center">
-                  <Bell className="w-4 h-4 text-orange-600" />
+                <div className="w-6 h-6 bg-primary/10 rounded-full flex items-center justify-center">
+                  <Bell className="w-3 h-3 text-primary" />
                 </div>
                 <div>
                   <div className="flex items-center gap-2">
-                    <span className="font-medium text-orange-900">
+                    <span className="font-medium text-primary text-sm">
                       {request.requestorName}
                     </span>
-                    <span className="text-xs text-orange-600">
+                    <span className="text-xs text-muted-foreground">
                       requests {CURRENCY_SYMBOL}{request.amount.toFixed(8)}
                     </span>
-                    <span className="text-xs text-blue-600 bg-blue-50 px-2 py-1 rounded">
+                    <span className="text-xs text-accent bg-accent/10 px-2 py-1 rounded-cow">
                       Your share: {CURRENCY_SYMBOL}{getContributionAmount(request).toFixed(8)}
                     </span>
                     {request.fulfilled ? (

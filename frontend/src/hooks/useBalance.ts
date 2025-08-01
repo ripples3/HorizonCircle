@@ -7,7 +7,7 @@ import { rateLimitedGetLogs } from '@/utils/rateLimitedRpc';
 import { getCachedCircles, storeCachedCircles, storeCircleMetadata, type CircleCacheData } from '@/utils/circleCache';
 
 // Global block filter constant  
-const MIN_BLOCK_NUMBER = BigInt(19669673); // Updated for fresh testing (Aug 2025)
+const MIN_BLOCK_NUMBER = BigInt(19673221); // Updated block filter (Aug 2025)
 
 // ETH balance (native token on Lisk)
 export function useETHBalance(address: string | undefined) {
@@ -30,32 +30,21 @@ export function useUserCircleBalance(address: string | undefined, circleAddress?
     args: [address as `0x${string}`],
     query: {
       enabled: !!address && !!contractAddress,
-      refetchOnMount: false, // Prevent auto refetch on mount
-      refetchOnReconnect: false, // Prevent auto refetch on reconnect  
-      refetchOnWindowFocus: false, // Prevent refetch when window gains focus
-      staleTime: 300000, // Consider data stale after 5 minutes (increased from 2min)
+      refetchOnReconnect: false,
+      refetchOnWindowFocus: false,
+      staleTime: 120000, // 2 minutes
       refetchInterval: false,
-      retry: 1, // Reduce retries
-      retryDelay: 5000, // 5 second delay (increased from 3s)
+      retry: 2,
+      retryDelay: 3000
     },
   });
 
-  // Debug logging (reduced frequency)
+  // Reduced debug logging for performance
   React.useEffect(() => {
     if (result.error) {
-      console.log('❌ Balance Query Error:', {
-        address,
-        contractAddress,
-        error: result.error.message
-      });
-    } else if (result.data) {
-      console.log('✅ Balance Query Success:', {
-        address,
-        contractAddress,
-        balance: result.data.toString()
-      });
+      console.warn('Balance query error:', result.error.message);
     }
-  }, [address, contractAddress, result.data, result.error]);
+  }, [result.error]);
 
   return result;
 }
@@ -79,7 +68,7 @@ export function useUserCirclesDirect() {
   const { address } = useAccount();
   const publicClient = usePublicClient();
   const [filteredCircles, setFilteredCircles] = React.useState<string[]>([]);
-  const [isFiltering, setIsFiltering] = React.useState(false);
+  const [isFiltering, setIsFiltering] = React.useState(true); // Start as loading
   
   // Use FACTORY as primary source since it has getUserCircles() 
   const result = useReadContract({
@@ -89,9 +78,10 @@ export function useUserCirclesDirect() {
     args: address ? [address] : undefined,
     query: {
       enabled: !!address && !!CONTRACT_ADDRESSES.FACTORY,
-      staleTime: 30000, // Shorter cache for better responsiveness
-      gcTime: 300000, // Keep in cache for 5 minutes
-      refetchInterval: false, // No auto-refresh
+      staleTime: 60000, // 1 minute cache
+      gcTime: 300000, // 5 minutes garbage collection
+      refetchInterval: false,
+      refetchOnWindowFocus: false
     },
   });
   
@@ -102,6 +92,15 @@ export function useUserCirclesDirect() {
   const discoverUserCircles = React.useCallback(async () => {
     if (!address || !publicClient) {
       setFilteredCircles([]);
+      setIsFiltering(false);
+      return;
+    }
+    
+    // Skip expensive blockchain operations if user has no wallet connected
+    if (!address.startsWith('0x')) {
+      console.log('⚠️ Invalid address, skipping blockchain discovery');
+      setFilteredCircles([]);
+      setIsFiltering(false);
       return;
     }
     
@@ -122,9 +121,9 @@ export function useUserCirclesDirect() {
       // Check IndexedDB cache first
       const cachedData = await getCachedCircles(address);
       if (cachedData) {
-        // For development, use shorter cache validity (5 minutes)
+        // Aggressive cache for faster loading
         const cacheAge = Date.now() - cachedData.timestamp;
-        const maxAge = 5 * 60 * 1000; // 5 minutes during development
+        const maxAge = 5 * 60 * 1000; // 5 minutes cache validity
         const blockDiff = currentBlock - cachedData.blockNumber;
         const maxBlockDiff = BigInt(100); // Allow up to 100 block difference
         
@@ -132,73 +131,49 @@ export function useUserCirclesDirect() {
         const isCacheFromOldBlocks = cachedData.blockNumber < MIN_BLOCK_NUMBER;
         
         if (cacheAge < maxAge && blockDiff < maxBlockDiff && !isCacheFromOldBlocks) {
-          console.log('🚀 Using IndexedDB cache for circles:', cachedData.circles.length);
+          console.log('⚡ Using cached circles:', cachedData.circles.length);
           setFilteredCircles(cachedData.circles);
           setIsFiltering(false);
           return;
-        } else {
-          console.log('⏰ Cache invalidated - age:', Math.round(cacheAge/1000), 's, block diff:', blockDiff.toString(), ', old blocks:', isCacheFromOldBlocks);
         }
       }
       
-      console.log('🔍 Discovering circles from blockchain...');
       const userCircles: string[] = [];
       
-      // Determine scan range - use cached data to scan incrementally
+      // Optimize scan range
       let fromBlock = MIN_BLOCK_NUMBER;
       if (cachedData && cachedData.lastScannedBlock) {
-        // Scan from last scanned block to current, with some overlap for safety
-        fromBlock = cachedData.lastScannedBlock - BigInt(50); // 50 block overlap
-        console.log('📈 Incremental scan from block:', fromBlock.toString());
-      } else {
-        console.log('🆕 Full scan from block:', fromBlock.toString());
+        fromBlock = cachedData.lastScannedBlock - BigInt(50);
       }
       
-      // Start with previously cached circles if doing incremental scan
+      // Start with cached circles for incremental scan
       if (cachedData && fromBlock > MIN_BLOCK_NUMBER) {
         userCircles.push(...cachedData.circles);
-        console.log('📋 Starting with cached circles:', cachedData.circles.length);
       }
     
-      // Step 1: Get all circles from FACTORY events (primary source)
+      // Step 1: Get all circles from FACTORY events (optimized range)
       const factoryCircles = await rateLimitedGetLogs<any[]>(publicClient, {
         address: CONTRACT_ADDRESSES.FACTORY as `0x${string}`,
         event: parseAbiItem('event CircleCreated(address indexed circleAddress, string name, address indexed creator)'),
-        fromBlock,
+        fromBlock: fromBlock > MIN_BLOCK_NUMBER ? fromBlock : MIN_BLOCK_NUMBER,
         toBlock: 'latest',
       });
       
-      console.log('🏭 Found', factoryCircles.length, 'new circles from factory events');
+      console.log('⚡ Factory scan range:', fromBlock.toString(), 'to latest');
       
-      // Step 2: Get all circles registered in registry (secondary source)
-      const registeredCircles = await rateLimitedGetLogs<any[]>(publicClient, {
-        address: CONTRACT_ADDRESSES.REGISTRY as `0x${string}`,
-        event: parseAbiItem('event CircleRegistered(address indexed circle, string name, address indexed creator)'),
-        fromBlock,
-        toBlock: 'latest',
-      });
-      
-      console.log('📡 Found', registeredCircles.length, 'new circle registration events');
-      
-      // FALLBACK: Also search for MemberAdded events where this user was added
-      // This helps discover circles created outside the registry system
-      let memberAddedCircles: any[] = [];
-      try {
-        const memberEvents = await rateLimitedGetLogs<any[]>(publicClient, {
-          event: parseAbiItem('event MemberAdded(address indexed member)'),
-          fromBlock: MIN_BLOCK_NUMBER, // Use same block filter as circle discovery
+      // Step 2: Get registry circles in parallel with factory
+      const [registeredCircles] = await Promise.all([
+        rateLimitedGetLogs<any[]>(publicClient, {
+          address: CONTRACT_ADDRESSES.REGISTRY as `0x${string}`,
+          event: parseAbiItem('event CircleRegistered(address indexed circle, string name, address indexed creator)'),
+          fromBlock: fromBlock > MIN_BLOCK_NUMBER ? fromBlock : MIN_BLOCK_NUMBER,
           toBlock: 'latest',
-        });
-        
-        // Filter for events where this user was added as a member
-        memberAddedCircles = memberEvents.filter(log => 
-          log.args?.member?.toLowerCase() === address.toLowerCase()
-        );
-        
-        console.log('👥 Found', memberAddedCircles.length, 'MemberAdded events for user');
-      } catch (err) {
-        console.warn('Failed to search MemberAdded events:', err);
-      }
+        })
+      ]);
+      
+      // Skip expensive MemberAdded search for now (significant performance boost)
+      const memberAddedCircles: any[] = [];
+      console.log('⚡ Skipping MemberAdded search for faster loading');
       
       // Step 2: Process MemberAdded circles  
       const memberAddedPromises = memberAddedCircles.map(async (log) => {
@@ -325,7 +300,8 @@ export function useUserCirclesDirect() {
       await storeCachedCircles(cacheData);
       console.log('💾 Cached circles in IndexedDB');
       
-      // Update UI
+      // Update UI with discovered circles
+      console.log('🔄 Setting filtered circles:', uniqueCircles);
       setFilteredCircles(uniqueCircles);
       setIsFiltering(false);
       
@@ -342,17 +318,25 @@ export function useUserCirclesDirect() {
       
       setIsFiltering(false);
     }
-    }, [address, result.data, publicClient]);
+    }, [address, publicClient]);
+    
+    // Memoize to prevent unnecessary re-execution
+    // Only run discovery if we have an address and haven't loaded circles yet  
+    const memoizedDiscoverCircles = React.useMemo(() => discoverUserCircles, [address, publicClient?.chain?.id]);
     
     React.useEffect(() => {
-      discoverUserCircles();
-    }, [discoverUserCircles]);
+      // Skip if already has circles or no address
+      if (address && filteredCircles.length === 0) {
+        memoizedDiscoverCircles();
+      }
+    }, [memoizedDiscoverCircles, address, filteredCircles.length]);
   
-  // Return filtered data
+  // Return filtered data - prioritize discovered circles
   return {
-    ...result,
     data: filteredCircles,
     isLoading: result.isLoading || isFiltering,
+    error: result.error,
+    refetch: result.refetch,
   };
 }
 
@@ -508,13 +492,12 @@ export function usePendingCollateralRequests() {
   const [error, setError] = React.useState<Error | null>(null);
   const [lastFetch, setLastFetch] = React.useState(0);
   
-  // Cache results for 2 minutes to avoid unnecessary refetches (increased from 30s)
-  const CACHE_DURATION = 120000;
+  // Cache results for 1 minute
+  const CACHE_DURATION = 60000;
 
   // Memoize fetchCollateralRequests to prevent unnecessary recreations
   const fetchCollateralRequests = React.useCallback(async () => {
     if (!address || !publicClient) {
-      console.log('⚠️ Missing address or publicClient:', { address, hasPublicClient: !!publicClient });
       setRequests([]);
       setIsLoading(false);
       return;
@@ -532,17 +515,11 @@ export function usePendingCollateralRequests() {
     setLastFetch(now);
 
       try {
-        // Reduced logging for better performance
         const allRequests: any[] = [];
-
-        // Only check circles the user is a member of
         const circlesToCheck = userCircles || [];
-        
-        // Deduplicate circles to avoid checking same circle multiple times
         const uniqueCircles = [...new Set(circlesToCheck)];
           
         if (uniqueCircles.length > 0) {
-          // User is member of circles - processing requests
           
           // Use Promise.all for parallel processing of circles
           const circleRequests = await Promise.all(uniqueCircles.map(async (circleAddress) => {
@@ -557,17 +534,12 @@ export function usePendingCollateralRequests() {
                 toBlock: 'latest',
               });
 
-              // Debug logging removed for performance
-
               // Process each event with early returns for performance
               for (const log of logs) {
                 const { requestId, borrower, amount, contributors, purpose } = log.args;
                 
-                // Processing event
-                
                 // Skip if any required args are undefined
                 if (!requestId || !borrower || !amount || !contributors || !purpose) {
-                  console.warn('Incomplete event args, skipping:', { requestId, borrower, amount, contributors, purpose });
                   continue;
                 }
                 
@@ -598,7 +570,6 @@ export function usePendingCollateralRequests() {
                       args: [requestId],
                     }) as [string, bigint, bigint, bigint, bigint, boolean, boolean, string, bigint];
                   } catch (abiError) {
-                    console.warn(`⚠️ ABI query failed for ${requestId}, using blockchain-first fallback:`, abiError);
                     
                     // ✅ BLOCKCHAIN-FIRST FALLBACK: Try individual blockchain queries before localStorage
                     let hasContributed = false;
@@ -613,9 +584,8 @@ export function usePendingCollateralRequests() {
                         args: [requestId, address],
                       }) as bigint;
                       hasContributed = contributionAmount > BigInt(0);
-                      console.log(`🔍 BLOCKCHAIN CHECK - User contributed: ${hasContributed} (${contributionAmount} wei)`);
                     } catch (contributionError) {
-                      console.warn('Could not check blockchain contribution status:', contributionError);
+                      // Silently handle error
                     }
                     
                     try {
@@ -626,9 +596,8 @@ export function usePendingCollateralRequests() {
                         functionName: 'requestDeclines',
                         args: [requestId, address],
                       }) as boolean;
-                      console.log(`🔍 BLOCKCHAIN CHECK - User declined: ${hasDeclined}`);
                     } catch (declineError) {
-                      console.warn('Could not check blockchain decline status:', declineError);
+                      // Silently handle error
                     }
                     
                     // Only use localStorage as a last resort if blockchain queries failed
@@ -636,29 +605,12 @@ export function usePendingCollateralRequests() {
                       const declinedRequests = JSON.parse(localStorage.getItem('declined-requests') || '{}');
                       const contributedRequests = JSON.parse(localStorage.getItem('contributed-requests') || '{}');
                       
-                      const hasLocalDecline = !!declinedRequests[requestId];
-                      const hasLocalContribution = !!contributedRequests[requestId];
-                      
-                      console.log(`🔍 FALLBACK TO LOCALSTORAGE for ${requestId}:`, {
-                        hasLocalDecline,
-                        hasLocalContribution,
-                        blockchainContributed: hasContributed,
-                        blockchainDeclined: hasDeclined
-                      });
-                      
-                      // Only trust localStorage if blockchain checks failed
-                      if (hasLocalDecline || hasLocalContribution) {
-                        console.log('⚠️ LocalStorage indicates user processed this request, but blockchain disagrees - trusting blockchain');
-                        // Don't skip - let blockchain be the source of truth
-                      }
+                      // Only use localStorage as fallback - blockchain is source of truth
                     }
                     
                     if (hasContributed || hasDeclined) {
-                      console.log('⚠️ User has already processed this request on blockchain, skipping notification');
                       continue;
                     }
-                    
-                    console.log('✅ User has NOT processed this request on blockchain, showing notification with fallback data');
                     
                     // ✅ CONSERVATIVE: If we can't read blockchain data, check if this is a known executed request
                     // Check if borrower has this as an active loan (indicates it was executed)
@@ -671,17 +623,8 @@ export function usePendingCollateralRequests() {
                     ];
                     
                     if (isKnownExecuted || knownExecutedRequests.includes(requestId)) {
-                      console.log('⚠️ Request is known to be executed, skipping notification');
                       continue;
                     }
-                    
-                    // For old requests, be more lenient - show notification if user hasn't acted
-                    // Remove age-based filtering since we have better checks now
-                    const requestAge = Date.now() - (log.blockNumber ? Number(log.blockNumber) * 12000 : 0); // ~12s per block
-                    console.log(`📅 Request age: ${Math.floor(requestAge / 1000 / 60 / 60)} hours old`);
-                    
-                    // Don't filter by age - let the user decide to contribute or decline
-                    // The checks above (hasLocalDecline, hasLocalContribution, isKnownExecuted) are sufficient
                     
                     // Try to determine fulfilled status even in fallback mode
                     let fallbackFulfilled = false;
@@ -706,9 +649,8 @@ export function usePendingCollateralRequests() {
                       }
                       
                       fallbackFulfilled = fallbackTotalContributed >= individualAmountNeeded;
-                      console.log(`🔍 FALLBACK FULFILLED CHECK: ${fallbackTotalContributed} >= ${individualAmountNeeded} = ${fallbackFulfilled}`);
                     } catch (err) {
-                      console.warn('Could not determine fulfilled status in fallback:', err);
+                      // Silently handle error
                     }
 
                     // Show notification with event data - user can contribute or decline
@@ -723,23 +665,9 @@ export function usePendingCollateralRequests() {
                       purpose as string,
                       BigInt(Math.floor(Date.now() / 1000)) // createdAt
                     ];
-                    
-                    console.log('🔄 Using notification fallback (show to allow user action):', requestData);
                   }
                   
                   const [borrowerAddr, borrowAmount, collateralNeeded, totalContributed, deadline, fulfilled, executed, purposeStr, createdAt] = requestData;
-                  
-                  console.log(`📊 Request ${requestId} final data:`, {
-                    borrower: borrowerAddr,
-                    borrowAmount: borrowAmount?.toString(),
-                    collateralNeeded: collateralNeeded?.toString(),
-                    totalContributed: totalContributed?.toString(),
-                    fulfilled,
-                    executed,
-                    deadline: deadline?.toString(),
-                    purpose: purposeStr,
-                    createdAt: createdAt?.toString()
-                  });
                   
                   // Check if current user has declined this request
                   let hasDeclined = false;
@@ -751,8 +679,6 @@ export function usePendingCollateralRequests() {
                       args: [requestId, address],
                     }) as boolean;
                   } catch (declineCheckError) {
-                    console.warn(`Could not check decline status for ${requestId}:`, declineCheckError);
-                    // If we can't check, assume not declined (safer)
                     hasDeclined = false;
                   }
                   
@@ -767,22 +693,8 @@ export function usePendingCollateralRequests() {
                     }) as bigint;
                     hasContributed = contributionAmount > BigInt(0);
                   } catch (contributionCheckError) {
-                    console.warn(`Could not check contribution for ${requestId}:`, contributionCheckError);
                     hasContributed = false;
                   }
-                  
-                  // ✅ CRITICAL DEBUG: Log exact filtering decision
-                  console.log(`🔍 NOTIFICATION FILTER DEBUG for ${requestId}:`, {
-                    fulfilled_value: fulfilled,
-                    fulfilled_type: typeof fulfilled,
-                    executed_value: executed,
-                    executed_type: typeof executed,
-                    hasContributed,
-                    hasDeclined,
-                    borrowerAddr_check: borrowerAddr !== '0x0000000000000000000000000000000000000000',
-                    filter_condition: `!executed(${!executed}) && !hasContributed(${!hasContributed}) && !hasDeclined(${!hasDeclined})`,
-                    will_show_notification: borrowerAddr !== '0x0000000000000000000000000000000000000000' && !executed && !hasContributed && !hasDeclined
-                  });
                   
                   // Show all requests where user is targeted contributor (not executed)
                   // Include fulfilled status so UI can display appropriate state
@@ -801,15 +713,13 @@ export function usePendingCollateralRequests() {
                       fulfilled: fulfilled,
                       hasContributed: hasContributed,
                       hasDeclined: hasDeclined,
-                      contributors: contributors as string[] // Add contributors array for individual allocation calculation
+                      contributors: contributors as string[]
                     };
-                    console.log(`🔍 REQUEST DATA INCLUDING STATUS:`, requestData);
                     allRequests.push(requestData);
                     circleRequests.push(requestData);
                   }
                 } catch (contractError) {
-                  console.error(`❌ Error checking request status for ${requestId} on circle ${circleAddress}:`, contractError);
-                  // Don't add the request if we can't verify its status
+                  // Silently skip invalid requests
                 }
               }
             } catch (err) {
@@ -958,78 +868,86 @@ export function useAggregatedUserData() {
       setError(null);
 
       try {
-        const circleData = [];
         let totalBalance = 0;
         let totalOriginalDeposits = 0;
         let totalAvailableToBorrow = 0;
 
-        // Get data from each circle
-        for (const circleAddress of userCircles) {
+        // Skip aggregated data if no circles to avoid unnecessary calls
+        if (userCircles.length === 0) {
+          setAggregatedData({
+            totalBalance: 0,
+            totalOriginalDeposits: 0,
+            totalYieldEarned: 0,
+            totalAvailableToBorrow: 0,
+            totalCurrentLoans: 0,
+            circles: []
+          });
+          setIsLoading(false);
+          return;
+        }
+
+        // Batch contract calls with Promise.allSettled for performance
+        const circleDataResults = await Promise.allSettled(userCircles.map(async (circleAddress) => {
           try {
-            // Fetching circle data
-
-            // Get user's current balance (including yield)
-            const currentBalance = await readContract(publicClient, {
-              address: circleAddress as `0x${string}`,
-              abi: CONTRACT_ABIS.LENDING_POOL,
-              functionName: 'getUserBalance',
-              args: [address],
-            }) as bigint;
-
-            // Get user's original shares (represents original deposit)
-            const userShares = await readContract(publicClient, {
-              address: circleAddress as `0x${string}`,
-              abi: CONTRACT_ABIS.LENDING_POOL,
-              functionName: 'userShares',
-              args: [address],
-            }) as bigint;
-
-            // Get circle name
-            let circleName = 'Circle';
-            try {
-              circleName = await readContract(publicClient, {
+            // Batch all contract calls for this circle
+            const [currentBalance, userShares, circleName] = await Promise.allSettled([
+              readContract(publicClient, {
+                address: circleAddress as `0x${string}`,
+                abi: CONTRACT_ABIS.LENDING_POOL,
+                functionName: 'getUserBalance',
+                args: [address],
+              }),
+              readContract(publicClient, {
+                address: circleAddress as `0x${string}`,
+                abi: CONTRACT_ABIS.LENDING_POOL,
+                functionName: 'userShares',
+                args: [address],
+              }),
+              readContract(publicClient, {
                 address: circleAddress as `0x${string}`,
                 abi: CONTRACT_ABIS.LENDING_POOL,
                 functionName: 'name',
-              }) as string;
-            } catch (nameError) {
-              console.warn(`Could not get name for circle ${circleAddress}`);
-            }
+              })
+            ]);
 
-            const balanceETH = parseFloat(formatEther(currentBalance));
-            const originalDepositETH = parseFloat(formatEther(userShares)); // shares represent original deposit
+            const balance = currentBalance.status === 'fulfilled' ? currentBalance.value as bigint : BigInt(0);
+            const shares = userShares.status === 'fulfilled' ? userShares.value as bigint : BigInt(0);
+            const name = circleName.status === 'fulfilled' ? circleName.value as string : 'Circle';
+
+            const balanceETH = parseFloat(formatEther(balance));
+            const originalDepositETH = parseFloat(formatEther(shares)); // shares represent original deposit
             const yieldEarned = balanceETH - originalDepositETH;
             const availableToBorrow = balanceETH * 0.85; // 85% LTV
 
-            totalBalance += balanceETH;
-            totalOriginalDeposits += originalDepositETH;
-            totalAvailableToBorrow += availableToBorrow;
-
-            circleData.push({
+            return {
               address: circleAddress,
-              name: circleName,
+              name,
               balance: balanceETH,
               originalDeposit: originalDepositETH,
-              yieldEarned: yieldEarned,
-              availableToBorrow: availableToBorrow
-            });
-
-            console.log(`✅ Circle ${circleAddress} data:`, {
-              name: circleName,
-              balance: balanceETH,
-              originalDeposit: originalDepositETH,
-              yieldEarned: yieldEarned
-            });
-
+              yieldEarned,
+              availableToBorrow,
+              totalBalance: balanceETH,
+              totalOriginalDeposits: originalDepositETH,
+              totalAvailableToBorrow: availableToBorrow
+            };
           } catch (circleError) {
-            console.warn(`Error fetching data from circle ${circleAddress}:`, circleError);
+            return null;
           }
-        }
+        }));
 
-        // Get active loans from sessionStorage
+        // Process successful circle data
+        const successfulCircles = circleDataResults
+          .filter(result => result.status === 'fulfilled' && result.value)
+          .map(result => result.value as any);
+
+        // Calculate totals
+        totalBalance = successfulCircles.reduce((sum, circle) => sum + circle.totalBalance, 0);
+        totalOriginalDeposits = successfulCircles.reduce((sum, circle) => sum + circle.totalOriginalDeposits, 0);
+        totalAvailableToBorrow = successfulCircles.reduce((sum, circle) => sum + circle.totalAvailableToBorrow, 0);
+
+        // Get active loans
         const activeLoans = JSON.parse(sessionStorage.getItem('userActiveLoans') || '[]');
         const totalCurrentLoans = activeLoans.reduce((sum: number, loan: any) => sum + (loan.amount || 0), 0);
-
         const totalYieldEarned = totalBalance - totalOriginalDeposits;
 
         setAggregatedData({
@@ -1038,10 +956,8 @@ export function useAggregatedUserData() {
           totalYieldEarned,
           totalAvailableToBorrow,
           totalCurrentLoans,
-          circles: circleData
+          circles: successfulCircles
         });
-
-        // Aggregated user data processed
 
       } catch (err) {
         console.error('Error fetching aggregated user data:', err);

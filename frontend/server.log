@@ -2,25 +2,893 @@
 > frontend@0.1.0 dev
 > next dev
 
- ⚠ Port 3000 is in use by process 72091, using available port 3001 instead.
    ▲ Next.js 15.4.1
-   - Local:        http://localhost:3001
-   - Network:      http://192.168.1.3:3001
+   - Local:        http://localhost:3000
+   - Network:      http://192.168.1.3:3000
    - Environments: .env.local
 
  ✓ Starting...
- ✓ Ready in 1921ms
+ ✓ Ready in 2s
  ○ Compiling / ...
- ✓ Compiled / in 10.7s (14407 modules)
+ ✓ Compiled / in 8.9s (14421 modules)
 🔍 Home Page State: { ready: false, authenticated: false, user: 'null' }
- GET / 200 in 11552ms
-🔍 Home Page State: { ready: false, authenticated: false, user: 'null' }
- GET / 200 in 107ms
-🔍 Home Page State: { ready: false, authenticated: false, user: 'null' }
- GET / 200 in 648ms
+ GET / 200 in 9688ms
  ○ Compiling /favicon.ico ...
- ✓ Compiled /favicon.ico in 6.9s (7409 modules)
- GET /favicon.ico 200 in 8302ms
+ ✓ Compiled /favicon.ico in 1715ms (7409 modules)
+ GET /favicon.ico 200 in 2485ms
 🔍 Home Page State: { ready: false, authenticated: false, user: 'null' }
- HEAD / 200 in 5271ms
-[?25h
+ HEAD / 200 in 2139ms
+ GET /favicon.ico 200 in 21ms
+ GET /favicon.ico 200 in 16ms
+ ✓ Compiled in 1710ms (14437 modules)
+ GET / 200 in 94ms
+🔍 Home Page State: { ready: false, authenticated: false, user: 'null' }
+ HEAD / 200 in 720ms
+ ✓ Compiled in 1068ms (14437 modules)
+ GET / 200 in 92ms
+ ✓ Compiled in 1143ms (14437 modules)
+ GET / 200 in 49ms
+ ✓ Compiled in 2.6s (14421 modules)
+ GET / 200 in 142ms
+ ⚠ Found a change in next.config.ts. Restarting the server to apply the changes...
+   ▲ Next.js 15.4.1
+   - Local:        http://localhost:3000
+   - Network:      http://192.168.1.3:3000
+   - Environments: .env.local
+   - Experiments (use with caution):
+     · optimizePackageImports
+
+ ✓ Starting...
+ ✓ Ready in 1406ms
+ ○ Compiling / ...
+ ✓ Compiled / in 13.7s (13863 modules)
+🔍 Home Page State: { ready: false, authenticated: false, user: 'null' }
+ GET / 200 in 14369ms
+🔍 Home Page State: { ready: false, authenticated: false, user: 'null' }
+ GET / 200 in 43ms
+🔍 Home Page State: { ready: false, authenticated: false, user: 'null' }
+ GET / 200 in 129ms
+ ○ Compiling /favicon.ico ...
+ ✓ Compiled /favicon.ico in 1234ms (7121 modules)
+ GET /favicon.ico 200 in 1782ms
+🔍 Home Page State: { ready: false, authenticated: false, user: 'null' }
+ HEAD / 200 in 1143ms
+ ✓ Compiled in 2.1s (13845 modules)
+ GET / 200 in 150ms
+ ✓ Compiled in 830ms (13845 modules)
+ GET / 200 in 56ms
+ ✓ Compiled in 1383ms (13845 modules)
+ GET / 200 in 62ms
+ ✓ Compiled in 642ms (13845 modules)
+ GET / 200 in 54ms
+ ✓ Compiled in 3.3s (13845 modules)
+ GET / 200 in 83ms
+ ✓ Compiled in 1289ms (13845 modules)
+ GET / 200 in 104ms
+🔍 Home Page State: { ready: false, authenticated: false, user: 'null' }
+ GET / 200 in 559ms
+🔍 Home Page State: { ready: false, authenticated: false, user: 'null' }
+ GET / 200 in 94ms
+ ○ Compiling /favicon.ico ...
+ ✓ Compiled /favicon.ico in 1163ms (7121 modules)
+ GET /favicon.ico 200 in 1757ms
+🔍 Home Page State: { ready: false, authenticated: false, user: 'null' }
+ HEAD / 200 in 1598ms
+ GET /favicon.ico 200 in 9ms
+🔍 Home Page State: { ready: false, authenticated: false, user: 'null' }
+ GET / 200 in 62ms
+ GET /favicon.ico 200 in 12ms
+🔍 Home Page State: { ready: false, authenticated: false, user: 'null' }
+ HEAD / 200 in 32ms
+ GET /favicon.ico 200 in 35ms
+🔍 Home Page State: { ready: false, authenticated: false, user: 'null' }
+ GET / 200 in 137ms
+ GET /favicon.ico 200 in 5ms
+🔍 Home Page State: { ready: false, authenticated: false, user: 'null' }
+ HEAD / 200 in 41ms
+ ✓ Compiled in 3.1s (13861 modules)
+ GET / 200 in 85ms
+ ✓ Compiled in 2.9s (13861 modules)
+ GET / 200 in 86ms
+ ✓ Compiled in 1123ms (13861 modules)
+ GET / 200 in 133ms
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+🔍 Home Page State: { ready: false, authenticated: false, user: 'null' }
+ GET / 200 in 798ms
+ GET /favicon.ico 200 in 19ms
+🔍 Home Page State: { ready: false, authenticated: false, user: 'null' }
+ HEAD / 200 in 33ms
+ ✓ Compiled in 918ms (13861 modules)
+🔍 Home Page State: { ready: false, authenticated: false, user: 'null' }
+ GET / 200 in 767ms
+ GET /favicon.ico 200 in 21ms
+🔍 Home Page State: { ready: false, authenticated: false, user: 'null' }
+ HEAD / 200 in 26ms
+ ✓ Compiled in 1116ms (13861 modules)
+ GET / 200 in 52ms
+ ✓ Compiled in 1317ms (13861 modules)
+ GET / 200 in 60ms
+ ✓ Compiled in 1191ms (13861 modules)
+ GET / 200 in 45ms
+🔍 Home Page State: { ready: false, authenticated: false, user: 'null' }
+ GET / 200 in 387ms
+ ✓ Compiled in 1407ms (13861 modules)
+ GET / 200 in 49ms
+🔍 Home Page State: { ready: false, authenticated: false, user: 'null' }
+ GET / 200 in 641ms
+ GET /favicon.ico 200 in 25ms
+🔍 Home Page State: { ready: false, authenticated: false, user: 'null' }
+ HEAD / 200 in 36ms
+ ✓ Compiled in 4s (13861 modules)
+ GET / 200 in 110ms
+ ✓ Compiled in 1428ms (13861 modules)
+ GET / 200 in 154ms
+🔍 Home Page State: { ready: false, authenticated: false, user: 'null' }
+ GET / 200 in 569ms
+ GET /favicon.ico 200 in 31ms
+🔍 Home Page State: { ready: false, authenticated: false, user: 'null' }
+ HEAD / 200 in 63ms
+ ✓ Compiled in 1370ms (13861 modules)
+ GET / 200 in 70ms
+ ✓ Compiled in 920ms (13861 modules)
+ GET / 200 in 58ms
+🔍 Home Page State: { ready: false, authenticated: false, user: 'null' }
+ GET / 200 in 1147ms
+ GET /favicon.ico 200 in 33ms
+🔍 Home Page State: { ready: false, authenticated: false, user: 'null' }
+ HEAD / 200 in 30ms
+ ✓ Compiled in 1225ms (13861 modules)
+ GET / 200 in 77ms
+ ✓ Compiled in 808ms (13861 modules)
+ GET / 200 in 56ms
+ ✓ Compiled in 1435ms (13861 modules)
+ GET / 200 in 49ms
+🔍 Home Page State: { ready: false, authenticated: false, user: 'null' }
+ GET / 200 in 369ms
+ GET /favicon.ico 200 in 19ms
+🔍 Home Page State: { ready: false, authenticated: false, user: 'null' }
+ HEAD / 200 in 135ms
+ ✓ Compiled in 4.4s (13861 modules)
+ GET / 200 in 38ms
+🔍 Home Page State: { ready: false, authenticated: false, user: 'null' }
+ GET / 200 in 312ms
+🔍 Home Page State: { ready: false, authenticated: false, user: 'null' }
+ GET / 200 in 71ms
+ GET /favicon.ico 200 in 36ms
+🔍 Home Page State: { ready: false, authenticated: false, user: 'null' }
+ HEAD / 200 in 34ms
+🔍 Home Page State: { ready: false, authenticated: false, user: 'null' }
+ GET / 200 in 72ms
+ GET /favicon.ico 200 in 10ms
+🔍 Home Page State: { ready: false, authenticated: false, user: 'null' }
+ HEAD / 200 in 47ms
+🔍 Home Page State: { ready: false, authenticated: false, user: 'null' }
+ GET / 200 in 268ms
+ GET /favicon.ico 200 in 12ms
+🔍 Home Page State: { ready: false, authenticated: false, user: 'null' }
+ HEAD / 200 in 35ms
+🔍 Home Page State: { ready: false, authenticated: false, user: 'null' }
+ GET / 200 in 49ms
+ GET /favicon.ico 200 in 7ms
+🔍 Home Page State: { ready: false, authenticated: false, user: 'null' }
+ HEAD / 200 in 37ms
+ GET /favicon.ico 200 in 19ms
+🔍 Home Page State: { ready: false, authenticated: false, user: 'null' }
+ GET / 200 in 71ms
+ GET /favicon.ico 200 in 5ms
+🔍 Home Page State: { ready: false, authenticated: false, user: 'null' }
+ HEAD / 200 in 111ms
+ ✓ Compiled in 2.3s (13861 modules)
+ GET / 200 in 95ms
+ ✓ Compiled in 1562ms (13861 modules)
+ GET / 200 in 52ms
+ ✓ Compiled in 829ms (13861 modules)
+ GET / 200 in 34ms
+ ✓ Compiled in 1121ms (13861 modules)
+ GET / 200 in 36ms
+ ✓ Compiled in 1254ms (13845 modules)
+ GET / 200 in 141ms
+ ✓ Compiled in 732ms (13845 modules)
+ GET / 200 in 41ms
+ ✓ Compiled in 4.3s (13845 modules)
+ GET / 200 in 43ms
+ ✓ Compiled in 816ms (13845 modules)
+ GET / 200 in 28ms
+ ✓ Compiled in 995ms (13845 modules)
+ GET / 200 in 31ms
+ ✓ Compiled in 1661ms (13845 modules)
+ GET / 200 in 25ms
+🔍 Home Page State: { ready: false, authenticated: false, user: 'null' }
+ GET / 200 in 429ms
+🔍 Home Page State: { ready: false, authenticated: false, user: 'null' }
+ GET / 200 in 150ms
+ ○ Compiling /favicon.ico ...
+ ✓ Compiled /favicon.ico in 2.7s (7121 modules)
+ GET /favicon.ico 200 in 3209ms
+🔍 Home Page State: { ready: false, authenticated: false, user: 'null' }
+ HEAD / 200 in 1779ms
+🔍 Home Page State: { ready: false, authenticated: false, user: 'null' }
+ GET / 200 in 169ms
+ GET /favicon.ico 200 in 7ms
+🔍 Home Page State: { ready: false, authenticated: false, user: 'null' }
+ HEAD / 200 in 34ms
+🔍 Home Page State: { ready: false, authenticated: false, user: 'null' }
+ GET / 200 in 101ms
+ GET /favicon.ico 200 in 7ms
+🔍 Home Page State: { ready: false, authenticated: false, user: 'null' }
+ HEAD / 200 in 29ms
+ ✓ Compiled in 7.8s (13861 modules)
+🔍 Home Page State: { ready: false, authenticated: false, user: 'null' }
+ GET / 200 in 441ms
+ GET / 200 in 2507ms
+ GET /favicon.ico 200 in 23ms
+🔍 Home Page State: { ready: false, authenticated: false, user: 'null' }
+ HEAD / 200 in 47ms
+ ✓ Compiled in 975ms (13861 modules)
+ GET / 200 in 43ms
+ ✓ Compiled in 1790ms (13861 modules)
+ GET / 200 in 25ms
+ ✓ Compiled in 3.4s (13845 modules)
+ GET / 200 in 97ms
+ ✓ Compiled in 834ms (13845 modules)
+ GET / 200 in 54ms
+ ✓ Compiled in 2.3s (13845 modules)
+ GET / 200 in 26ms
+🔍 Home Page State: { ready: false, authenticated: false, user: 'null' }
+ GET / 200 in 509ms
+ ○ Compiling /favicon.ico ...
+ ✓ Compiled /favicon.ico in 622ms (7121 modules)
+ GET /favicon.ico 200 in 1137ms
+🔍 Home Page State: { ready: false, authenticated: false, user: 'null' }
+ HEAD / 200 in 870ms
+ ✓ Compiled in 2.2s (13861 modules)
+ GET / 200 in 53ms
+ ✓ Compiled in 1211ms (13861 modules)
+ GET / 200 in 50ms
+ ✓ Compiled in 811ms (13861 modules)
+ GET / 200 in 37ms
+ ✓ Compiled in 1053ms (13861 modules)
+ GET / 200 in 52ms
+🔍 Home Page State: { ready: false, authenticated: false, user: 'null' }
+ GET / 200 in 550ms
+ GET /favicon.ico 200 in 33ms
+🔍 Home Page State: { ready: false, authenticated: false, user: 'null' }
+ HEAD / 200 in 41ms
+🔍 Home Page State: { ready: false, authenticated: false, user: 'null' }
+ GET / 200 in 105ms
+ GET /favicon.ico 200 in 21ms
+🔍 Home Page State: { ready: false, authenticated: false, user: 'null' }
+ HEAD / 200 in 35ms
+ ✓ Compiled in 3.5s (13845 modules)
+ GET / 200 in 139ms
+ ✓ Compiled in 844ms (13845 modules)
+ GET / 200 in 51ms
+ ✓ Compiled in 1717ms (13845 modules)
+ GET / 200 in 21ms
+ ✓ Compiled in 842ms (13845 modules)
+ GET / 200 in 29ms
+ ✓ Compiled in 3.2s (13845 modules)
+ GET / 200 in 33ms
+🔍 Home Page State: { ready: false, authenticated: false, user: 'null' }
+ GET / 200 in 635ms
+ ○ Compiling /favicon.ico ...
+ ✓ Compiled /favicon.ico in 1751ms (7121 modules)
+ GET /favicon.ico 200 in 2425ms
+🔍 Home Page State: { ready: false, authenticated: false, user: 'null' }
+ HEAD / 200 in 1781ms
+ ✓ Compiled in 7.1s (13845 modules)
+ GET / 200 in 285ms
+🔍 Home Page State: { ready: false, authenticated: false, user: 'null' }
+ GET / 200 in 523ms
+ ✓ Compiled in 2.1s (13843 modules)
+ ✓ Compiled /favicon.ico in 488ms (7120 modules)
+ GET /favicon.ico 200 in 590ms
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ ✓ Compiled in 813ms (13859 modules)
+🔍 Home Page State: { ready: false, authenticated: false, user: 'null' }
+ GET / 200 in 1058ms
+ GET /favicon.ico 200 in 30ms
+ ✓ Compiled in 6.5s (13853 modules)
+ ⚠ Fast Refresh had to perform a full reload. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+ HEAD / 200 in 6790ms
+ GET / 200 in 1587ms
+🔍 Home Page State: { ready: false, authenticated: false, user: 'null' }
+🔍 Home Page State: { ready: false, authenticated: false, user: 'null' }
+🔍 Home Page State: { ready: false, authenticated: false, user: 'null' }
+ GET / 200 in 526ms
+ GET /favicon.ico 200 in 23ms
+🔍 Home Page State: { ready: false, authenticated: false, user: 'null' }
+ HEAD / 200 in 41ms
+🔍 Home Page State: { ready: false, authenticated: false, user: 'null' }
+ GET / 200 in 84ms
+ GET /favicon.ico 200 in 158ms
+🔍 Home Page State: { ready: false, authenticated: false, user: 'null' }
+ HEAD / 200 in 19ms
+🔍 Home Page State: { ready: false, authenticated: false, user: 'null' }
+ GET / 200 in 153ms
+ GET /favicon.ico 200 in 7ms
+🔍 Home Page State: { ready: false, authenticated: false, user: 'null' }
+ HEAD / 200 in 37ms
+ ✓ Compiled in 9.8s (13837 modules)
+ GET / 200 in 111ms
+ ✓ Compiled in 1117ms (13837 modules)
+ GET / 200 in 121ms
+ ✓ Compiled in 3.5s (13837 modules)
+ GET / 200 in 44ms
+ ✓ Compiled in 1281ms (13837 modules)
+ GET / 200 in 39ms
+🔍 Home Page State: { ready: false, authenticated: false, user: 'null' }
+ GET / 200 in 705ms
+ ○ Compiling /favicon.ico ...
+ ✓ Compiled /favicon.ico in 3.4s (7117 modules)
+ GET /favicon.ico 200 in 4127ms
+🔍 Home Page State: { ready: false, authenticated: false, user: 'null' }
+ HEAD / 200 in 2489ms
+ GET /favicon.ico 200 in 16ms
+ ✓ Compiled in 24.1s (13853 modules)
+ GET / 200 in 86ms
+🔍 Home Page State: { ready: false, authenticated: false, user: 'null' }
+ GET / 200 in 721ms
+ GET /favicon.ico 200 in 100ms
+🔍 Home Page State: { ready: false, authenticated: false, user: 'null' }
+ HEAD / 200 in 65ms
+ ✓ Compiled in 1162ms (6736 modules)
+ GET / 200 in 21ms
+ ✓ Compiled in 36.1s (13855 modules)
+ GET / 200 in 8298ms
+ ✓ Compiled in 8.5s (13839 modules)
+ GET / 200 in 143ms
+ ✓ Compiled in 14s (13839 modules)
+ GET / 200 in 50ms
+ ✓ Compiled in 1150ms (13839 modules)
+ GET / 200 in 41ms
+ ✓ Compiled in 1095ms (13839 modules)
+ GET / 200 in 52ms
+ ✓ Compiled in 4.8s (13839 modules)
+ GET / 200 in 45ms
+🔍 Home Page State: { ready: false, authenticated: false, user: 'null' }
+ GET / 200 in 749ms
+ ○ Compiling /favicon.ico ...
+ ✓ Compiled /favicon.ico in 2.9s (7118 modules)
+ GET /favicon.ico 200 in 3543ms
+🔍 Home Page State: { ready: false, authenticated: false, user: 'null' }
+ HEAD / 200 in 2579ms
+ ✓ Compiled in 22.8s (13855 modules)
+ GET / 200 in 108ms
+🔍 Home Page State: { ready: false, authenticated: false, user: 'null' }
+ GET / 200 in 685ms
+ GET /favicon.ico 200 in 220ms
+🔍 Home Page State: { ready: false, authenticated: false, user: 'null' }
+ HEAD / 200 in 46ms
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ ✓ Compiled in 15.9s (13855 modules)
+🔍 Home Page State: { ready: false, authenticated: false, user: 'null' }
+🔍 Home Page State: { ready: false, authenticated: false, user: 'null' }
+ GET / 200 in 10286ms
+ GET /favicon.ico 200 in 48ms
+🔍 Home Page State: { ready: false, authenticated: false, user: 'null' }
+ HEAD / 200 in 80ms
+ ✓ Compiled in 4.7s (13855 modules)
+🔍 Home Page State: { ready: false, authenticated: false, user: 'null' }
+ GET / 200 in 304ms
+ GET /favicon.ico 200 in 502ms
+🔍 Home Page State: { ready: false, authenticated: false, user: 'null' }
+ HEAD / 200 in 946ms
+ ✓ Compiled in 1374ms (13855 modules)
+ GET / 200 in 48ms
+ ✓ Compiled in 1160ms (13855 modules)
+ GET / 200 in 44ms
+🔍 Home Page State: { ready: false, authenticated: false, user: 'null' }
+ GET / 200 in 376ms
+ GET /favicon.ico 200 in 28ms
+🔍 Home Page State: { ready: false, authenticated: false, user: 'null' }
+ HEAD / 200 in 48ms
+ ✓ Compiled in 1455ms (13855 modules)
+ GET / 200 in 37ms
+ ✓ Compiled in 752ms (13855 modules)
+ GET / 200 in 24ms
+ ✓ Compiled in 1063ms (13855 modules)
+ GET / 200 in 937ms
+🔍 Home Page State: { ready: false, authenticated: false, user: 'null' }
+ GET / 200 in 767ms
+ GET /favicon.ico 200 in 73ms
+🔍 Home Page State: { ready: false, authenticated: false, user: 'null' }
+ HEAD / 200 in 116ms
+ ✓ Compiled in 17.2s (13855 modules)
+ GET / 200 in 87ms
+ ✓ Compiled in 1146ms (13839 modules)
+ GET / 200 in 194ms
+ ✓ Compiled in 890ms (13839 modules)
+ GET / 200 in 571ms
+🔍 Home Page State: { ready: false, authenticated: false, user: 'null' }
+ GET / 200 in 637ms
+ ○ Compiling /favicon.ico ...
+ ✓ Compiled /favicon.ico in 643ms (7118 modules)
+ GET /favicon.ico 200 in 806ms
+🔍 Home Page State: { ready: false, authenticated: false, user: 'null' }
+ HEAD / 200 in 485ms
+ ✓ Compiled in 19.7s (13855 modules)
+ GET / 200 in 138ms
+🔍 Home Page State: { ready: false, authenticated: false, user: 'null' }
+ GET / 200 in 583ms
+ GET /favicon.ico 200 in 31ms
+🔍 Home Page State: { ready: false, authenticated: false, user: 'null' }
+ HEAD / 200 in 35ms
+🔍 Home Page State: { ready: false, authenticated: false, user: 'null' }
+ GET / 200 in 76ms
+ GET /favicon.ico 200 in 8ms
+🔍 Home Page State: { ready: false, authenticated: false, user: 'null' }
+ HEAD / 200 in 22ms
+ ✓ Compiled in 5.1s (6737 modules)
+ GET / 200 in 23ms
+ ✓ Compiled in 4.6s (13831 modules)
+ GET / 200 in 126ms
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+🔍 Home Page State: { ready: false, authenticated: false, user: 'null' }
+ GET / 200 in 464ms
+ ⨯ ./src/components/dashboard/dashboard-layout.tsx
+Error:   [31mx[0m Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+     ,-[[36;1;4m/Users/don/Projects/HorizonCircle/frontend/src/components/dashboard/dashboard-layout.tsx[0m:443:1]
+ [2m440[0m |             onViewCircle={handleViewCircle}
+ [2m441[0m |           />
+ [2m442[0m |         );
+ [2m443[0m |     }
+     : [35;1m    ^[0m
+ [2m444[0m |   };
+ [2m445[0m | 
+ [2m446[0m |   return (
+     `----
+  [31mx[0m Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+     ,-[[36;1;4m/Users/don/Projects/HorizonCircle/frontend/src/components/dashboard/dashboard-layout.tsx[0m:444:1]
+ [2m441[0m |           />
+ [2m442[0m |         );
+ [2m443[0m |     }
+ [2m444[0m |   };
+     : [35;1m  ^[0m
+ [2m445[0m | 
+ [2m446[0m |   return (
+ [2m447[0m |     <div className="flex h-screen bg-background">
+     `----
+  [31mx[0m Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+     ,-[[36;1;4m/Users/don/Projects/HorizonCircle/frontend/src/components/dashboard/dashboard-layout.tsx[0m:458:1]
+ [2m455[0m |       </main>
+ [2m456[0m |     </div>
+ [2m457[0m |   );
+ [2m458[0m | }
+     : [35;1m^[0m
+     `----
+  [31mx[0m Unexpected eof
+     ,-[[36;1;4m/Users/don/Projects/HorizonCircle/frontend/src/components/dashboard/dashboard-layout.tsx[0m:458:1]
+ [2m455[0m |       </main>
+ [2m456[0m |     </div>
+ [2m457[0m |   );
+ [2m458[0m | }
+     `----
+
+Caused by:
+    Syntax Error
+
+Import trace for requested module:
+./src/components/dashboard/dashboard-layout.tsx
+./src/app/page.tsx
+ ⨯ ./src/components/dashboard/dashboard-layout.tsx
+Error:   [31mx[0m Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+     ,-[[36;1;4m/Users/don/Projects/HorizonCircle/frontend/src/components/dashboard/dashboard-layout.tsx[0m:443:1]
+ [2m440[0m |             onViewCircle={handleViewCircle}
+ [2m441[0m |           />
+ [2m442[0m |         );
+ [2m443[0m |     }
+     : [35;1m    ^[0m
+ [2m444[0m |   };
+ [2m445[0m | 
+ [2m446[0m |   return (
+     `----
+  [31mx[0m Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+     ,-[[36;1;4m/Users/don/Projects/HorizonCircle/frontend/src/components/dashboard/dashboard-layout.tsx[0m:444:1]
+ [2m441[0m |           />
+ [2m442[0m |         );
+ [2m443[0m |     }
+ [2m444[0m |   };
+     : [35;1m  ^[0m
+ [2m445[0m | 
+ [2m446[0m |   return (
+ [2m447[0m |     <div className="flex h-screen bg-background">
+     `----
+  [31mx[0m Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+     ,-[[36;1;4m/Users/don/Projects/HorizonCircle/frontend/src/components/dashboard/dashboard-layout.tsx[0m:458:1]
+ [2m455[0m |       </main>
+ [2m456[0m |     </div>
+ [2m457[0m |   );
+ [2m458[0m | }
+     : [35;1m^[0m
+     `----
+  [31mx[0m Unexpected eof
+     ,-[[36;1;4m/Users/don/Projects/HorizonCircle/frontend/src/components/dashboard/dashboard-layout.tsx[0m:458:1]
+ [2m455[0m |       </main>
+ [2m456[0m |     </div>
+ [2m457[0m |   );
+ [2m458[0m | }
+     `----
+
+Caused by:
+    Syntax Error
+
+Import trace for requested module:
+./src/components/dashboard/dashboard-layout.tsx
+./src/app/page.tsx
+ ○ Compiling /_not-found ...
+ ⨯ ./src/components/dashboard/dashboard-layout.tsx
+Error:   [31mx[0m Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+     ,-[[36;1;4m/Users/don/Projects/HorizonCircle/frontend/src/components/dashboard/dashboard-layout.tsx[0m:443:1]
+ [2m440[0m |             onViewCircle={handleViewCircle}
+ [2m441[0m |           />
+ [2m442[0m |         );
+ [2m443[0m |     }
+     : [35;1m    ^[0m
+ [2m444[0m |   };
+ [2m445[0m | 
+ [2m446[0m |   return (
+     `----
+  [31mx[0m Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+     ,-[[36;1;4m/Users/don/Projects/HorizonCircle/frontend/src/components/dashboard/dashboard-layout.tsx[0m:444:1]
+ [2m441[0m |           />
+ [2m442[0m |         );
+ [2m443[0m |     }
+ [2m444[0m |   };
+     : [35;1m  ^[0m
+ [2m445[0m | 
+ [2m446[0m |   return (
+ [2m447[0m |     <div className="flex h-screen bg-background">
+     `----
+  [31mx[0m Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+     ,-[[36;1;4m/Users/don/Projects/HorizonCircle/frontend/src/components/dashboard/dashboard-layout.tsx[0m:458:1]
+ [2m455[0m |       </main>
+ [2m456[0m |     </div>
+ [2m457[0m |   );
+ [2m458[0m | }
+     : [35;1m^[0m
+     `----
+  [31mx[0m Unexpected eof
+     ,-[[36;1;4m/Users/don/Projects/HorizonCircle/frontend/src/components/dashboard/dashboard-layout.tsx[0m:458:1]
+ [2m455[0m |       </main>
+ [2m456[0m |     </div>
+ [2m457[0m |   );
+ [2m458[0m | }
+     `----
+
+Caused by:
+    Syntax Error
+
+Import trace for requested module:
+./src/components/dashboard/dashboard-layout.tsx
+./src/app/page.tsx
+ HEAD / 500 in 23102ms
+ GET / 500 in 1555ms
+ GET / 500 in 18ms
+ GET / 200 in 10ms
+ ⨯ ./src/components/dashboard/dashboard-layout.tsx
+Error:   [31mx[0m Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+     ,-[[36;1;4m/Users/don/Projects/HorizonCircle/frontend/src/components/dashboard/dashboard-layout.tsx[0m:444:1]
+ [2m441[0m |             onViewCircle={handleViewCircle}
+ [2m442[0m |           />
+ [2m443[0m |         );
+ [2m444[0m |     }
+     : [35;1m    ^[0m
+ [2m445[0m |   };
+ [2m446[0m | 
+ [2m447[0m |   return (
+     `----
+  [31mx[0m Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+     ,-[[36;1;4m/Users/don/Projects/HorizonCircle/frontend/src/components/dashboard/dashboard-layout.tsx[0m:445:1]
+ [2m442[0m |           />
+ [2m443[0m |         );
+ [2m444[0m |     }
+ [2m445[0m |   };
+     : [35;1m  ^[0m
+ [2m446[0m | 
+ [2m447[0m |   return (
+ [2m448[0m |     <div className="flex h-screen bg-background">
+     `----
+  [31mx[0m Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+     ,-[[36;1;4m/Users/don/Projects/HorizonCircle/frontend/src/components/dashboard/dashboard-layout.tsx[0m:459:1]
+ [2m456[0m |       </main>
+ [2m457[0m |     </div>
+ [2m458[0m |   );
+ [2m459[0m | }
+     : [35;1m^[0m
+     `----
+  [31mx[0m Unexpected eof
+     ,-[[36;1;4m/Users/don/Projects/HorizonCircle/frontend/src/components/dashboard/dashboard-layout.tsx[0m:459:1]
+ [2m456[0m |       </main>
+ [2m457[0m |     </div>
+ [2m458[0m |   );
+ [2m459[0m | }
+     `----
+
+Caused by:
+    Syntax Error
+
+Import trace for requested module:
+./src/components/dashboard/dashboard-layout.tsx
+./src/app/page.tsx
+ GET / 500 in 55ms
+ GET / 500 in 21ms
+ GET / 500 in 17ms
+ GET / 500 in 6ms
+ GET / 500 in 6ms
+ GET / 500 in 6ms
+ GET / 500 in 6ms
+ GET / 500 in 5ms
+ GET / 500 in 6ms
+ ⨯ ./src/components/dashboard/dashboard-layout.tsx
+Error:   [31mx[0m Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+     ,-[[36;1;4m/Users/don/Projects/HorizonCircle/frontend/src/components/dashboard/dashboard-layout.tsx[0m:443:1]
+ [2m440[0m |             onViewCircle={handleViewCircle}
+ [2m441[0m |           />
+ [2m442[0m |         );
+ [2m443[0m |     }
+     : [35;1m    ^[0m
+ [2m444[0m |   };
+ [2m445[0m | 
+ [2m446[0m |   return (
+     `----
+  [31mx[0m Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+     ,-[[36;1;4m/Users/don/Projects/HorizonCircle/frontend/src/components/dashboard/dashboard-layout.tsx[0m:444:1]
+ [2m441[0m |           />
+ [2m442[0m |         );
+ [2m443[0m |     }
+ [2m444[0m |   };
+     : [35;1m  ^[0m
+ [2m445[0m | 
+ [2m446[0m |   return (
+ [2m447[0m |     <div className="flex h-screen bg-background">
+     `----
+  [31mx[0m Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+     ,-[[36;1;4m/Users/don/Projects/HorizonCircle/frontend/src/components/dashboard/dashboard-layout.tsx[0m:458:1]
+ [2m455[0m |       </main>
+ [2m456[0m |     </div>
+ [2m457[0m |   );
+ [2m458[0m | }
+     : [35;1m^[0m
+     `----
+  [31mx[0m Unexpected eof
+     ,-[[36;1;4m/Users/don/Projects/HorizonCircle/frontend/src/components/dashboard/dashboard-layout.tsx[0m:458:1]
+ [2m455[0m |       </main>
+ [2m456[0m |     </div>
+ [2m457[0m |   );
+ [2m458[0m | }
+     `----
+
+Caused by:
+    Syntax Error
+
+Import trace for requested module:
+./src/components/dashboard/dashboard-layout.tsx
+./src/app/page.tsx
+ GET / 500 in 16ms
+ GET / 500 in 13ms
+ GET / 500 in 16ms
+ GET / 500 in 5ms
+ GET / 500 in 5ms
+ GET / 500 in 6ms
+ GET / 500 in 5ms
+ GET / 500 in 7ms
+ GET / 500 in 50ms
+ GET / 500 in 13ms
+ ⨯ ./src/components/dashboard/dashboard-layout.tsx
+Error:   [31mx[0m Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+     ,-[[36;1;4m/Users/don/Projects/HorizonCircle/frontend/src/components/dashboard/dashboard-layout.tsx[0m:450:1]
+ [2m447[0m |             onCreateCircle={handleCreateCircle}
+ [2m448[0m |           />
+ [2m449[0m |         );
+ [2m450[0m |     }
+     : [35;1m    ^[0m
+ [2m451[0m |   };
+ [2m452[0m | 
+ [2m453[0m |   return (
+     `----
+  [31mx[0m Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+     ,-[[36;1;4m/Users/don/Projects/HorizonCircle/frontend/src/components/dashboard/dashboard-layout.tsx[0m:451:1]
+ [2m448[0m |           />
+ [2m449[0m |         );
+ [2m450[0m |     }
+ [2m451[0m |   };
+     : [35;1m  ^[0m
+ [2m452[0m | 
+ [2m453[0m |   return (
+ [2m454[0m |     <div className="flex h-screen bg-background">
+     `----
+  [31mx[0m Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+     ,-[[36;1;4m/Users/don/Projects/HorizonCircle/frontend/src/components/dashboard/dashboard-layout.tsx[0m:465:1]
+ [2m462[0m |       </main>
+ [2m463[0m |     </div>
+ [2m464[0m |   );
+ [2m465[0m | }
+     : [35;1m^[0m
+     `----
+  [31mx[0m Unexpected eof
+     ,-[[36;1;4m/Users/don/Projects/HorizonCircle/frontend/src/components/dashboard/dashboard-layout.tsx[0m:465:1]
+ [2m462[0m |       </main>
+ [2m463[0m |     </div>
+ [2m464[0m |   );
+ [2m465[0m | }
+     `----
+
+Caused by:
+    Syntax Error
+
+Import trace for requested module:
+./src/components/dashboard/dashboard-layout.tsx
+./src/app/page.tsx
+ GET / 500 in 26ms
+ GET / 500 in 13ms
+ GET / 500 in 43ms
+ ⨯ ./src/components/dashboard/dashboard-layout.tsx
+Error:   [31mx[0m Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+     ,-[[36;1;4m/Users/don/Projects/HorizonCircle/frontend/src/components/dashboard/dashboard-layout.tsx[0m:450:1]
+ [2m447[0m |             onCreateCircle={handleCreateCircle}
+ [2m448[0m |           />
+ [2m449[0m |         );
+ [2m450[0m |   };
+     : [35;1m  ^[0m
+ [2m451[0m | 
+ [2m452[0m |   return (
+ [2m453[0m |     <div className="flex h-screen bg-background">
+     `----
+  [31mx[0m Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+     ,-[[36;1;4m/Users/don/Projects/HorizonCircle/frontend/src/components/dashboard/dashboard-layout.tsx[0m:464:1]
+ [2m461[0m |       </main>
+ [2m462[0m |     </div>
+ [2m463[0m |   );
+ [2m464[0m | }
+     : [35;1m^[0m
+     `----
+  [31mx[0m Unexpected eof
+     ,-[[36;1;4m/Users/don/Projects/HorizonCircle/frontend/src/components/dashboard/dashboard-layout.tsx[0m:464:1]
+ [2m461[0m |       </main>
+ [2m462[0m |     </div>
+ [2m463[0m |   );
+ [2m464[0m | }
+     `----
+
+Caused by:
+    Syntax Error
+
+Import trace for requested module:
+./src/components/dashboard/dashboard-layout.tsx
+./src/app/page.tsx
+ ⨯ ./src/components/dashboard/dashboard-layout.tsx
+Error:   [31mx[0m Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+     ,-[[36;1;4m/Users/don/Projects/HorizonCircle/frontend/src/components/dashboard/dashboard-layout.tsx[0m:450:1]
+ [2m447[0m |             onCreateCircle={handleCreateCircle}
+ [2m448[0m |           />
+ [2m449[0m |         );
+ [2m450[0m |     }
+     : [35;1m    ^[0m
+ [2m451[0m |   };
+ [2m452[0m | 
+ [2m453[0m |   return (
+     `----
+  [31mx[0m Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+     ,-[[36;1;4m/Users/don/Projects/HorizonCircle/frontend/src/components/dashboard/dashboard-layout.tsx[0m:451:1]
+ [2m448[0m |           />
+ [2m449[0m |         );
+ [2m450[0m |     }
+ [2m451[0m |   };
+     : [35;1m  ^[0m
+ [2m452[0m | 
+ [2m453[0m |   return (
+ [2m454[0m |     <div className="flex h-screen bg-background">
+     `----
+  [31mx[0m Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+     ,-[[36;1;4m/Users/don/Projects/HorizonCircle/frontend/src/components/dashboard/dashboard-layout.tsx[0m:465:1]
+ [2m462[0m |       </main>
+ [2m463[0m |     </div>
+ [2m464[0m |   );
+ [2m465[0m | }
+     : [35;1m^[0m
+     `----
+  [31mx[0m Unexpected eof
+     ,-[[36;1;4m/Users/don/Projects/HorizonCircle/frontend/src/components/dashboard/dashboard-layout.tsx[0m:465:1]
+ [2m462[0m |       </main>
+ [2m463[0m |     </div>
+ [2m464[0m |   );
+ [2m465[0m | }
+     `----
+
+Caused by:
+    Syntax Error
+
+Import trace for requested module:
+./src/components/dashboard/dashboard-layout.tsx
+./src/app/page.tsx
+ GET / 500 in 30ms
+ GET / 500 in 10ms
+ GET / 500 in 12ms
+ GET / 500 in 10ms
+ GET / 500 in 24ms
+ ✓ Compiled /_error in 44.7s (14170 modules)
+🔍 Home Page State: { ready: false, authenticated: false, user: 'null' }
+ ○ Compiling /_not-found ...
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ GET / 200 in 1210ms
+🔍 Home Page State: { ready: false, authenticated: false, user: 'null' }
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+🔍 Home Page State: { ready: false, authenticated: false, user: 'null' }
+ GET / 200 in 291ms
+ GET / 200 in 268ms
+ ✓ Compiled /_not-found in 6.5s (14161 modules)
+🔍 Home Page State: { ready: false, authenticated: false, user: 'null' }
+ HEAD / 200 in 50ms
+🔍 Home Page State: { ready: false, authenticated: false, user: 'null' }
+ HEAD / 200 in 18ms
+🔍 Home Page State: { ready: false, authenticated: false, user: 'null' }
+ GET / 200 in 279ms
+🔍 Home Page State: { ready: false, authenticated: false, user: 'null' }
+ HEAD / 200 in 34ms
+ ✓ Compiled in 10.8s (14170 modules)
+ GET / 200 in 124ms
+ GET / 200 in 41ms
+🔍 Home Page State: { ready: false, authenticated: false, user: 'null' }
+ GET / 200 in 1533ms
+🔍 Home Page State: { ready: false, authenticated: false, user: 'null' }
+ GET / 200 in 67ms
+🔍 Home Page State: { ready: false, authenticated: false, user: 'null' }
+ HEAD / 200 in 44ms
+ ✓ Compiled in 10.7s (14170 modules)
+ GET / 200 in 97ms
+🔍 Home Page State: { ready: false, authenticated: false, user: 'null' }
+ GET / 200 in 492ms
+🔍 Home Page State: { ready: false, authenticated: false, user: 'null' }
+ HEAD / 200 in 218ms
+🔍 Home Page State: { ready: false, authenticated: false, user: 'null' }
+ GET / 200 in 85ms
+🔍 Home Page State: { ready: false, authenticated: false, user: 'null' }
+ HEAD / 200 in 784ms
+🔍 Home Page State: { ready: false, authenticated: false, user: 'null' }
+ GET / 200 in 8935ms
+🔍 Home Page State: { ready: false, authenticated: false, user: 'null' }
+ HEAD / 200 in 299ms
+ ○ Compiling /favicon.ico ...
+ ✓ Compiled /favicon.ico in 6.7s (7300 modules)
+ ✓ Compiled in 11.4s (14170 modules)
+ GET / 200 in 194ms
+ ✓ Compiled in 1621ms (14170 modules)
+ GET / 200 in 96ms
+🔍 Home Page State: { ready: false, authenticated: false, user: 'null' }
+ GET / 200 in 715ms
+🔍 Home Page State: { ready: false, authenticated: false, user: 'null' }
+ HEAD / 200 in 35ms
+ ○ Compiling /favicon.ico ...
+ ✓ Compiled /favicon.ico in 5.1s (7300 modules)
+🔍 Home Page State: { ready: false, authenticated: false, user: 'null' }
+ GET / 200 in 378ms
+🔍 Home Page State: { ready: false, authenticated: false, user: 'null' }
+ HEAD / 200 in 34ms
+🔍 Home Page State: { ready: false, authenticated: false, user: 'null' }
+ GET / 200 in 69ms
+🔍 Home Page State: { ready: false, authenticated: false, user: 'null' }
+ HEAD / 200 in 27ms
+ ✓ Compiled in 16.3s (14170 modules)
+ GET / 200 in 188ms
+ ⚠ Found a change in next.config.ts. Restarting the server to apply the changes...
+   ▲ Next.js 15.4.1
+   - Local:        http://localhost:3000
+   - Network:      http://192.168.1.3:3000
+   - Environments: .env.local
+   - Experiments (use with caution):
+     · optimizePackageImports
+
+ ✓ Starting...
+ ✓ Ready in 1670ms
+ ⚠ Found a change in next.config.ts. Restarting the server to apply the changes...
+   ▲ Next.js 15.4.1
+   - Local:        http://localhost:3000
+   - Network:      http://192.168.1.3:3000
+   - Environments: .env.local
+   - Experiments (use with caution):
+     · optimizePackageImports
+
+ ✓ Starting...
+ ✓ Ready in 1526ms

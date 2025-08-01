@@ -1,12 +1,14 @@
 'use client';
 
 import { usePrivy } from '@privy-io/react-auth';
-import { useEffect } from 'react';
+import { useEffect, lazy, Suspense } from 'react';
 import ConnectButton from "@/components/auth/connect-button";
-import DashboardLayout from "@/components/dashboard/dashboard-layout";
-import CircleDebug from "@/components/debug/circle-debug";
-import CacheDebugPanel from "@/components/debug/cache-debug";
-import { db } from '@/config/supabase';
+
+// Lazy load heavy components
+const DashboardLayout = lazy(() => import("@/components/dashboard/dashboard-layout"));
+
+// Lazy load database config only when needed
+const loadDatabase = () => import('@/config/supabase').then(mod => mod.db);
 
 export default function Home() {
   const { ready, authenticated, user } = usePrivy();
@@ -14,29 +16,20 @@ export default function Home() {
   // Debug logging
   console.log('🔍 Home Page State:', { ready, authenticated, user: user ? 'present' : 'null' });
 
-  // Create user record when authenticated
+  // Create user record when authenticated (lazy loaded)
   useEffect(() => {
     if (authenticated && user) {
       const createUserRecord = async () => {
         try {
           const walletAddress = user.wallet?.address || `privy-${user.id}`;
-          console.log('👤 Creating user record for:', walletAddress);
+          const db = await loadDatabase();
           
-          const data = await db.upsertUser({
+          await db.upsertUser({
             wallet_address: walletAddress,
             email: user.email?.address || null,
           });
-          
-          console.log('✅ User record created/updated:', data);
         } catch (err) {
-          console.error('❌ Exception creating user record:', err);
-          console.error('❌ Error details:', {
-            message: (err as Error)?.message || 'No message',
-            name: (err as Error)?.name || 'No name', 
-            stack: (err as Error)?.stack || 'No stack',
-            typeof: typeof err,
-            err
-          });
+          console.error('User record creation failed:', err);
         }
       };
 
@@ -46,10 +39,10 @@ export default function Home() {
 
   if (!ready) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading...</p>
+      <div className="min-h-screen bg-gradient-light flex items-center justify-center">
+        <div className="text-center glass-subtle p-8 rounded-cow-lg">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-3"></div>
+          <p className="text-foreground text-sm">Initializing...</p>
         </div>
       </div>
     );
@@ -61,9 +54,9 @@ export default function Home() {
 
   return (
     <div>
-      <DashboardLayout />
-      <CircleDebug />
-      <CacheDebugPanel />
+      <Suspense fallback={<div className="animate-pulse h-screen bg-background" />}>
+        <DashboardLayout />
+      </Suspense>
     </div>
   );
 }

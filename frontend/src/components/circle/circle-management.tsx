@@ -82,8 +82,10 @@ export default function CircleManagement() {
   const { addMember, isPending: isAddingMember, isConfirmed: memberAdded } = useAddMember(selectedCircle || '');
 
   console.log('Circle Management Debug:', {
-    userCircles,
+    userCircles: userCircles || [],
+    userCirclesLength: userCircles?.length || 0,
     hasCircles,
+    isLoadingCircles: circlesLoading,
     selectedCircleIndex,
     selectedCircle,
     circleName,
@@ -171,6 +173,30 @@ export default function CircleManagement() {
         <div className="flex items-center justify-center h-64">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
         </div>
+      </div>
+    );
+  }
+
+  // Show loading state while circles are being discovered
+  if (circlesLoading) {
+    return (
+      <div className="p-6">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Users className="w-5 h-5" />
+              Loading Circles...
+            </CardTitle>
+            <CardDescription>
+              Discovering your circles from the blockchain
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center justify-center p-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     );
   }
