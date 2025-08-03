@@ -103,6 +103,13 @@ class CircleCacheManager {
     const db = await this.initDB();
 
     return new Promise((resolve, reject) => {
+      // Validate required fields before storing
+      if (!metadata.address || !metadata.name || !metadata.creator || metadata.registrationBlock === undefined) {
+        console.warn('⚠️ Invalid metadata, skipping cache store:', metadata);
+        resolve(); // Don't fail, just skip caching
+        return;
+      }
+
       const transaction = db.transaction(['circleMetadata'], 'readwrite');
       const store = transaction.objectStore('circleMetadata');
       

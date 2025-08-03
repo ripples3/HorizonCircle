@@ -2,87 +2,83 @@
 pragma solidity ^0.8.20;
 
 import "forge-std/Script.sol";
+import "forge-std/console.sol";
+import "../src/SwapModuleFinalFix.sol";
 
-interface IFactory {
-    function createCircle(string memory name, address[] memory initialMembers) external returns (address);
+interface IWETH {
+    function approve(address spender, uint256 amount) external returns (bool);
+    function balanceOf(address account) external view returns (uint256);
 }
 
-interface ICircle {
-    function deposit() external payable;
-    function getUserBalance(address user) external view returns (uint256);
-    function requestCollateral(
-        uint256 borrowAmount,
-        uint256 collateralAmount, 
-        address[] memory contributors,
-        uint256[] memory amounts,
-        string memory purpose
-    ) external returns (bytes32 requestId);
-    function contributeToRequest(bytes32 requestId) external;
-    function executeRequest(bytes32 requestId) external returns (bytes32 loanId);
+interface IERC20Extended {
+    function balanceOf(address account) external view returns (uint256);
 }
 
 contract TestFinalFix is Script {
-    address constant FACTORY = 0x8828F446D893E3a223c574a1Eae03b68B267ab33; // Final fix factory
-    address constant USER = 0xAFA9CF6c504Ca060B31626879635c049E2De9E1c;
+    address constant WETH = 0x4200000000000000000000000000000000000006;
+    address constant wstETH = 0x76D8de471F54aAA87784119c60Df1bbFc852C415;
+    address constant TEST_USER = 0xAFA9CF6c504Ca060B31626879635c049E2De9E1c;
     
     function run() external {
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
         
-        console.log("=== TESTING FINAL FIX ===");
-        console.log("Factory:", FACTORY);
-        console.log("User balance:", USER.balance / 1e15, "finney");
+        console.log("=== FINAL FIX TEST ===");
+        console.log("Testing with proper sqrtPriceLimitX96 calculation");
         
         vm.startBroadcast(deployerPrivateKey);
         
-        // Create circle
-        address[] memory members = new address[](1);
-        members[0] = USER;
-        address circleAddress = IFactory(FACTORY).createCircle("FinalTest", members);
-        console.log("Circle:", circleAddress);
+        // Deploy the final fix
+        SwapModuleFinalFix swapModule = new SwapModuleFinalFix();
+        console.log("SwapModuleFinalFix deployed at:", address(swapModule));
         
-        // Deposit and create loan
-        ICircle(circleAddress).deposit{value: 0.0001 ether}();
-        uint256 balance = ICircle(circleAddress).getUserBalance(USER);
-        uint256 borrowAmount = balance / 2;
+        // Authorize test user
+        swapModule.authorizeCircle(TEST_USER);
+        console.log("Test user authorized");
         
-        console.log("Balance:", balance / 1e12, "microETH");
-        console.log("Requesting:", borrowAmount / 1e12, "microETH");
+        vm.stopBroadcast();
         
-        address[] memory contributors = new address[](1);
-        contributors[0] = USER;
-        uint256[] memory amounts = new uint256[](1);
-        amounts[0] = borrowAmount;
+        // Test the swap
+        console.log("\n=== TESTING FINAL FIX ===");
+        uint256 userWETH = IWETH(WETH).balanceOf(TEST_USER);
+        uint256 userWstETH = IERC20Extended(wstETH).balanceOf(TEST_USER);
+        console.log("User WETH:", userWETH);
+        console.log("User wstETH before:", userWstETH);
         
-        bytes32 requestId = ICircle(circleAddress).requestCollateral(
-            borrowAmount, borrowAmount, contributors, amounts, "Final test"
-        );
+        uint256 swapAmount = 0.00001 ether; // 10 microETH
+        console.log("Testing swap amount:", swapAmount);
         
-        ICircle(circleAddress).contributeToRequest(requestId);
-        console.log("Contribution made");
+        vm.startBroadcast(deployerPrivateKey);
         
-        // Test executeRequest with final fix
-        console.log("\nTesting executeRequest with final fix...");
-        uint256 ethBefore = USER.balance;
+        // Approve and test
+        IWETH(WETH).approve(address(swapModule), swapAmount);
+        console.log("Approved swap module");
         
-        try ICircle(circleAddress).executeRequest(requestId) returns (bytes32 loanId) {
-            console.log("SUCCESS! executeRequest finally worked!");
-            console.log("Loan ID:", vm.toString(loanId));
+        try swapModule.swapWETHToWstETH(swapAmount) returns (uint256 wstETHReceived) {
+            console.log("\n*** SUCCESS! SWAP WORKING! ***");
+            console.log("wstETH received:", wstETHReceived);
             
-            uint256 ethAfter = USER.balance;
-            uint256 ethReceived = ethAfter - ethBefore;
-            console.log("ETH received:", ethReceived / 1e12, "microETH");
+            uint256 finalWstETH = IERC20Extended(wstETH).balanceOf(TEST_USER);
+            console.log("User wstETH after:", finalWstETH);
+            console.log("Net wstETH gained:", finalWstETH - userWstETH);
             
-            if (ethReceived > 0) {
-                console.log("COMPLETE SUCCESS: DeFi integration working!");
-            }
+            console.log("\n*** VELODROME INTEGRATION FIXED! ***");
+            console.log("The issue was sqrtPriceLimitX96 = 0 causing SPL error");
+            console.log("Solution: Use proper price limit calculation");
+            console.log("Ready to update verified contracts!");
             
         } catch Error(string memory reason) {
             console.log("Still failed:", reason);
-        } catch {
-            console.log("Still failed with unknown error");
+            if (keccak256(bytes(reason)) == keccak256(bytes("SPL"))) {
+                console.log("SPL error persists - need more investigation");
+            }
+        } catch (bytes memory lowLevelData) {
+            console.log("Low-level error:");
+            console.logBytes(lowLevelData);
         }
         
         vm.stopBroadcast();
-        console.log("=== FINAL TEST COMPLETE ===");
+        
+        console.log("\n=== FINAL TEST COMPLETE ===");
+        console.log("SwapModuleFinalFix:", address(swapModule));
     }
 }

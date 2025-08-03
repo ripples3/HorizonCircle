@@ -39,6 +39,7 @@ contract HorizonCircleWithMorphoAuth is ReentrancyGuard {
     address constant MORPHO_BLUE = 0x00cD58DEEbd7A2F1C55dAec715faF8aed5b27BF8;
     
     // State variables
+    string public name;
     address[] public members;
     mapping(address => bool) public isCircleMember;
     mapping(address => uint256) public userShares;
@@ -92,7 +93,7 @@ contract HorizonCircleWithMorphoAuth is ReentrancyGuard {
     }
     
     function initialize(
-        string memory,
+        string memory _name,
         address[] memory _members,
         address,
         address _swapModule,
@@ -102,20 +103,44 @@ contract HorizonCircleWithMorphoAuth is ReentrancyGuard {
         require(_swapModule != address(0), "Invalid swap module");
         require(_lendingModule != address(0), "Invalid lending module");
         
+        name = _name; // Store the circle name
         swapModule = _swapModule;
         lendingModule = _lendingModule;
         
-        // Add members
+        // Add members with duplicate prevention
         for (uint256 i = 0; i < _members.length; i++) {
-            members.push(_members[i]);
-            isCircleMember[_members[i]] = true;
-            emit MemberAdded(_members[i]);
+            address member = _members[i];
+            require(member != address(0), "Invalid member address");
+            
+            // FIXED: Check if member already added to prevent duplicates
+            if (!isCircleMember[member]) {
+                members.push(member);
+                isCircleMember[member] = true;
+                emit MemberAdded(member);
+            }
         }
         
         // INDUSTRY STANDARD: Authorize lending module in Morpho during initialization
         // This follows the same pattern as Compound approve() - one-time setup
         IMorphoBlue(MORPHO_BLUE).setAuthorization(_lendingModule, true);
         emit MorphoAuthorized(_lendingModule);
+    }
+    
+    function addMember(address newMember) external onlyMember {
+        require(newMember != address(0), "Invalid address");
+        require(!isCircleMember[newMember], "Already a member");
+        
+        members.push(newMember);
+        isCircleMember[newMember] = true;
+        emit MemberAdded(newMember);
+    }
+    
+    function getMemberCount() external view returns (uint256) {
+        return members.length;
+    }
+    
+    function getMembers() external view returns (address[] memory) {
+        return members;
     }
     
     function deposit() external payable nonReentrant onlyMember {

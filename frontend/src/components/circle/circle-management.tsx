@@ -15,6 +15,11 @@ import { CONTRACT_ADDRESSES, CONTRACT_ABIS } from '@/config/web3';
 import CreateCircle from '@/components/circle/create-circle';
 import { useMemberNames, setMemberName } from '@/utils/memberNames';
 
+// Helper function to validate Ethereum addresses
+function isValidAddress(address: string): boolean {
+  return /^0x[a-fA-F0-9]{40}$/.test(address);
+}
+
 // Helper component to display individual circle with name in select dropdown
 function CircleSelectItem({ 
   circleAddress, 
@@ -163,9 +168,6 @@ export default function CircleManagement() {
     }
   };
 
-  const isValidAddress = (address: string) => {
-    return /^0x[a-fA-F0-9]{40}$/.test(address);
-  };
 
   if (circlesLoading) {
     return (

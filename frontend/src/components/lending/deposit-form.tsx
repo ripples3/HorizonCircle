@@ -28,9 +28,12 @@ import { useDeposit } from '@/hooks/useTransactions';
 function CircleOption({ circleAddress }: { circleAddress: string }) {
   const { data: circleName, isLoading } = useCircleName(circleAddress);
   
+  // Create a user-friendly fallback name from address
+  const fallbackName = `Circle ${circleAddress.slice(0, 6)}...${circleAddress.slice(-4)}`;
+  
   return (
     <span>
-      {isLoading ? 'Loading...' : (circleName || 'Unnamed Circle')}
+      {isLoading ? 'Loading...' : (circleName || fallbackName)}
       <span className="ml-2 text-sm opacity-70">
         {circleAddress.slice(0, 6)}...{circleAddress.slice(-4)}
       </span>

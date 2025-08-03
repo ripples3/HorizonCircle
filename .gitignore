@@ -1,0 +1,22 @@
+# Documentation files (local only)
+CLAUDE.md
+TODO.md
+DEFI_INTEGRATION_DETAILED.md
+DEVELOPMENT_CHALLENGES.md
+PROBLEMS_ENCOUNTERED.md
+
+# OS files
+.DS_Store
+FETCH_HEAD
+
+# Environment files
+.env
+.env.local
+.env.production
+
+# IDE files
+.vscode/
+.idea/
+
+# Logs
+*.log

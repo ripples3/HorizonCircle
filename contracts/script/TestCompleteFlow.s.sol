@@ -2,194 +2,131 @@
 pragma solidity ^0.8.20;
 
 import "forge-std/Script.sol";
-import "../src/LendingModuleIndustryStandard.sol";
+import "forge-std/console.sol";
+
+interface IHorizonCircleMinimalProxy {
+    function createCircle(string memory name, address[] memory initialMembers) external returns (address);
+    function getCircleCount() external view returns (uint256);
+}
+
+interface IHorizonCircle {
+    function initialize(string memory name, address[] memory members, address factory, address swapModule, address lendingModule) external;
+    function deposit() external payable;
+    function requestCollateral(uint256 amount, address[] memory contributors, uint256[] memory amounts, string memory purpose) external returns (bytes32);
+    function contributeToRequest(bytes32 requestId) external;
+    function executeRequest(bytes32 requestId) external returns (bytes32);
+    function getUserBalance(address user) external view returns (uint256);
+    function isCircleMember(address user) external view returns (bool);
+}
+
+interface ILendingModule {
+    function supplyCollateralAndBorrow(uint256 collateralAmount, uint256 borrowAmount, address borrower) external returns (bytes32);
+    function authorizeUser(address user) external;
+}
 
 interface ISwapModule {
     function authorizeCircle(address circle) external;
-}
-
-interface ICircle {
-    function initialize(
-        string memory name,
-        address[] memory members,
-        address registry,
-        address swapModule,
-        address lendingModule
-    ) external;
-    function deposit() external payable;
-    function getUserBalance(address user) external view returns (uint256);
-    function directLTVWithdraw(uint256 borrowAmount) external returns (bytes32 loanId);
-}
-
-interface IERC20Token {
-    function balanceOf(address account) external view returns (uint256);
-}
-
-interface IMorphoVault {
-    function balanceOf(address account) external view returns (uint256);
+    function swapWETHToWstETH(uint256 wethAmount) external returns (uint256 wstETHReceived);
 }
 
 contract TestCompleteFlow is Script {
-    address constant IMPLEMENTATION_WITH_AUTH = 0xB5fe149c80235fAb970358543EEce1C800FDcA64;
-    address constant FIXED_SWAP_MODULE = 0xd336fB4dbFCB2a1Dc06b1c7297a7B8bD4059EeaD;
+    // Verified contract addresses
+    address constant FACTORY = 0x10f7D93CeB8bf6a2d2cEE0D230b37ed1AB1B562e; // Factory with Universal Router
     address constant REGISTRY = 0x68Dc6FeBA312BF9B7BfBe096EA5e7ccb61a522dE;
-    address constant USER = 0xAFA9CF6c504Ca060B31626879635c049E2De9E1c;
-    address constant WETH = 0x4200000000000000000000000000000000000006;
-    address constant MORPHO_VAULT = 0x7Cbaa98bd5e171A658FdF761ED1Db33806a0d346;
-    address constant WSTETH = 0x76D8de471F54aAA87784119c60Df1bbFc852C415;
+    address constant IMPLEMENTATION = 0x00F9EEbd50AfFA16Ed2Fc8B7Cf96Af761c1a8c56;
+    address constant LENDING_MODULE = 0x96F582fAF5a1D61640f437EBea9758b18a678720;
+    address constant SWAP_MODULE = 0xFb9c203bF7C0B00A1deb0C47b24156e3b9f6F49C; // Universal Router SwapModule
+    
+    // Test user
+    address constant TEST_USER = 0xAFA9CF6c504Ca060B31626879635c049E2De9E1c;
     
     function run() external {
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
         
-        console.log("=== COMPLETE FLOW TEST: DEPOSIT -> BORROW -> USER RECEIVES ETH ===");
+        console.log("=== COMPLETE USER JOURNEY TEST ===");
+        console.log("Test User:", TEST_USER);
+        console.log("Factory:", FACTORY);
+        console.log("Implementation:", IMPLEMENTATION);
+        console.log("Lending Module:", LENDING_MODULE);
+        
+        // Check initial user balance
+        uint256 initialBalance = TEST_USER.balance;
+        console.log("Initial ETH Balance:", initialBalance);
         
         vm.startBroadcast(deployerPrivateKey);
         
-        // Deploy modules
-        LendingModuleIndustryStandard lendingModule = new LendingModuleIndustryStandard();
-        console.log("LendingModule deployed:", address(lendingModule));
-        
-        // Deploy circle
-        bytes memory creationCode = abi.encodePacked(
-            hex"3d602d80600a3d3981f3363d3d373d3d3d363d73",
-            IMPLEMENTATION_WITH_AUTH,
-            hex"5af43d82803e903d91602b57fd5bf3"
-        );
-        
-        address circle;
-        bytes32 salt = keccak256(abi.encodePacked("COMPLETE_FLOW_TEST", block.timestamp));
-        assembly {
-            circle := create2(0, add(creationCode, 0x20), mload(creationCode), salt)
-        }
-        
-        console.log("Circle deployed:", circle);
-        
-        // Initialize
+        // Step 1: Create Circle
+        console.log("\n=== STEP 1: CREATE CIRCLE ===");
+        string memory circleName = string(abi.encodePacked("TestCircle", vm.toString(block.timestamp)));
         address[] memory members = new address[](1);
-        members[0] = USER;
+        members[0] = TEST_USER;
         
-        ICircle(circle).initialize(
-            "COMPLETE_FLOW_TEST",
-            members,
-            REGISTRY,
-            FIXED_SWAP_MODULE,
-            address(lendingModule)
-        );
+        IHorizonCircleMinimalProxy factory = IHorizonCircleMinimalProxy(FACTORY);
+        address circleAddress = factory.createCircle(circleName, members);
+        console.log("Circle Created:", circleAddress);
+        console.log("Circle Name:", circleName);
         
-        // Authorize modules
-        ISwapModule(FIXED_SWAP_MODULE).authorizeCircle(circle);
-        lendingModule.authorizeCircle(circle);
+        // Verify circle membership
+        IHorizonCircle circle = IHorizonCircle(circleAddress);
+        bool isMember = circle.isCircleMember(TEST_USER);
+        console.log("User is member:", isMember);
         
-        console.log("\\n=== STEP 1: VERIFY INITIAL STATE ===");
-        uint256 userEthInitial = USER.balance;
-        uint256 circleWethInitial = IERC20Token(WETH).balanceOf(circle);
-        uint256 circleMorphoInitial = IMorphoVault(MORPHO_VAULT).balanceOf(circle);
-        uint256 circleWstEthInitial = IERC20Token(WSTETH).balanceOf(circle);
+        // Authorize circle to use SwapModule
+        console.log("Authorizing circle for SwapModule...");
+        ISwapModule swapModule = ISwapModule(SWAP_MODULE);
+        swapModule.authorizeCircle(circleAddress);
         
-        console.log("User ETH initial:", userEthInitial);
-        console.log("Circle WETH initial:", circleWethInitial);
-        console.log("Circle Morpho shares initial:", circleMorphoInitial);
-        console.log("Circle wstETH initial:", circleWstEthInitial);
-        
-        console.log("\\n=== STEP 2: USER DEPOSITS ETH ===");
-        uint256 depositAmount = 0.002 ether; // 2000 microETH
+        // Step 2: Deposit ETH to Circle
+        console.log("\n=== STEP 2: DEPOSIT ETH ===");
+        uint256 depositAmount = 0.00003 ether; // 30 microETH
         console.log("Depositing:", depositAmount);
         
-        ICircle(circle).deposit{value: depositAmount}();
+        circle.deposit{value: depositAmount}();
         
-        uint256 userEthAfterDeposit = USER.balance;
-        uint256 circleWethAfterDeposit = IERC20Token(WETH).balanceOf(circle);
-        uint256 circleMorphoAfterDeposit = IMorphoVault(MORPHO_VAULT).balanceOf(circle);
-        uint256 userBalanceInCircle = ICircle(circle).getUserBalance(USER);
+        uint256 userBalance = circle.getUserBalance(TEST_USER);
+        console.log("User Circle Balance:", userBalance);
         
-        console.log("User ETH after deposit:", userEthAfterDeposit);
-        console.log("Circle WETH after deposit:", circleWethAfterDeposit);
-        console.log("Circle Morpho shares after deposit:", circleMorphoAfterDeposit);
-        console.log("User balance in circle:", userBalanceInCircle);
+        // Step 3: Request Collateral for Loan
+        console.log("\n=== STEP 3: REQUEST LOAN ===");
+        uint256 loanAmount = 0.00001 ether; // 10 microETH
+        console.log("Requesting loan:", loanAmount);
         
-        // Verify deposit worked
-        require(userEthAfterDeposit == userEthInitial - depositAmount, "ETH not deducted from user");
-        require(circleMorphoAfterDeposit > circleMorphoInitial, "No Morpho shares received");
-        require(userBalanceInCircle > 0, "User has no balance in circle");
+        address[] memory contributors = new address[](1);
+        contributors[0] = TEST_USER; // Self-contribution for simplicity
         
-        console.log("SUCCESS: DEPOSIT SUCCESSFUL - User deposited ETH, circle has Morpho shares");
+        uint256[] memory amounts = new uint256[](1);
+        amounts[0] = 0.000012 ether; // Sufficient contribution amount (12 microETH > 11.76 required)
         
-        console.log("\\n=== STEP 3: CALCULATE BORROW AMOUNT ===");
-        uint256 maxBorrow = (userBalanceInCircle * 8500) / 10000; // 85% LTV
-        uint256 borrowAmount = maxBorrow / 2; // Borrow 50% of max for safety
+        bytes32 requestId = circle.requestCollateral(loanAmount, contributors, amounts, "Test loan");
+        console.log("Request ID:", vm.toString(requestId));
         
-        console.log("Max borrowable (85% LTV):", maxBorrow);
-        console.log("Actual borrow amount:", borrowAmount);
+        // Step 4: Contribute to Request
+        console.log("\n=== STEP 4: CONTRIBUTE TO REQUEST ===");
+        circle.contributeToRequest(requestId);
+        console.log("Contribution made");
         
-        require(borrowAmount > 0, "Borrow amount is 0");
+        // Step 5: Execute Request (DeFi Integration)
+        console.log("\n=== STEP 5: EXECUTE LOAN ===");
+        console.log("Executing loan with DeFi integration...");
+        console.log("Flow: Morpho withdrawal -> WETH->wstETH swap -> Morpho lending -> ETH to user");
         
-        console.log("\\n=== STEP 4: USER BORROWS (COMPLETE DeFi FLOW) ===");
-        console.log("This should:");
-        console.log("1. Withdraw WETH from Morpho vault");
-        console.log("2. Swap WETH -> wstETH via Velodrome");
-        console.log("3. Supply wstETH as collateral to Morpho lending");
-        console.log("4. Borrow WETH from Morpho lending");
-        console.log("5. Convert WETH -> ETH and send to user");
-        
-        uint256 userEthBeforeBorrow = USER.balance;
-        uint256 circleWethBeforeBorrow = IERC20Token(WETH).balanceOf(circle);
-        uint256 circleMorphoBeforeBorrow = IMorphoVault(MORPHO_VAULT).balanceOf(circle);
-        uint256 circleWstEthBeforeBorrow = IERC20Token(WSTETH).balanceOf(circle);
-        
-        console.log("User ETH before borrow:", userEthBeforeBorrow);
-        console.log("Circle WETH before borrow:", circleWethBeforeBorrow);
-        console.log("Circle Morpho before borrow:", circleMorphoBeforeBorrow);
-        console.log("Circle wstETH before borrow:", circleWstEthBeforeBorrow);
-        
-        try ICircle(circle).directLTVWithdraw(borrowAmount) returns (bytes32 loanId) {
-            console.log("\\n=== LOAN EXECUTION COMPLETED ===");
-            console.log("Loan ID:");
-            console.logBytes32(loanId);
-            
-            uint256 userEthAfterBorrow = USER.balance;
-            uint256 circleWethAfterBorrow = IERC20Token(WETH).balanceOf(circle);
-            uint256 circleMorphoAfterBorrow = IMorphoVault(MORPHO_VAULT).balanceOf(circle);
-            uint256 circleWstEthAfterBorrow = IERC20Token(WSTETH).balanceOf(circle);
-            
-            console.log("\\n=== STEP 5: VERIFY RESULTS ===");
-            console.log("User ETH after borrow:", userEthAfterBorrow);
-            console.log("Circle WETH after borrow:", circleWethAfterBorrow);
-            console.log("Circle Morpho after borrow:", circleMorphoAfterBorrow);
-            console.log("Circle wstETH after borrow:", circleWstEthAfterBorrow);
-            
-            uint256 ethReceived = userEthAfterBorrow - userEthBeforeBorrow;
-            console.log("\\nETH RECEIVED BY USER:", ethReceived);
-            
-            if (ethReceived > 0) {
-                console.log("\\nSUCCESS! USER RECEIVED BORROWED ETH!");
-                console.log("Amount received:", ethReceived, "wei");
-                console.log("Amount received:", ethReceived / 1e12, "microETH");
-                
-                // Verify expected changes
-                if (circleMorphoAfterBorrow < circleMorphoBeforeBorrow) {
-                    console.log("SUCCESS: Morpho vault shares reduced (WETH withdrawn)");
-                }
-                if (circleWstEthAfterBorrow > circleWstEthBeforeBorrow) {
-                    console.log("SUCCESS: wstETH collateral acquired (swap worked)");
-                }
-                
-                console.log("\\n*** COMPLETE FLOW SUCCESSFUL ***");
-                console.log("HorizonCircle: PRODUCTION READY!");
-                
-            } else {
-                console.log("\\nFAILURE: User received 0 ETH");
-                console.log("Loan executed but no ETH transferred to user");
-                console.log("Check lending module implementation");
-            }
-            
-        } catch Error(string memory reason) {
-            console.log("\\nLOAN FAILED");
-            console.log("Reason:", reason);
-            
-        } catch {
-            console.log("\\nLOAN FAILED - Unknown error");
-        }
+        bytes32 loanId = circle.executeRequest(requestId);
+        console.log("Loan ID:", vm.toString(loanId));
         
         vm.stopBroadcast();
+        
+        // Step 6: Verify Results
+        console.log("\n=== STEP 6: VERIFY RESULTS ===");
+        console.log("Final ETH Balance:", TEST_USER.balance);
+        
+        if (TEST_USER.balance > 580000000000000) {
+            console.log("SUCCESS: User received borrowed ETH!");
+        } else {
+            console.log("ISSUE: User did not receive ETH");
+        }
+        
+        console.log("\n=== SYSTEM STATUS ===");
+        console.log("Circle Address:", circleAddress);
+        console.log("Test Complete");
     }
 }

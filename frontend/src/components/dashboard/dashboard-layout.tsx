@@ -314,8 +314,7 @@ export default function DashboardLayout() {
                       
                       // Create blockchain transaction for collateral request
                       await requestCollateral(
-                        borrowAmount.toString(),     // ✅ Original borrow amount
-                        collateralAmount.toString(), // ✅ Collateral needed from members
+                        borrowAmount.toString(),     // ✅ Borrow amount (collateral calculated automatically at 85% LTV)
                         contributorAddresses, // Array of contributor addresses
                         `Collateral request for loan from circle ${circleAddress.slice(0, 6)}...${circleAddress.slice(-4)} (${contributors.length} contributor${contributors.length > 1 ? 's' : ''})`, // Purpose
                         circleAddress // Target circle address

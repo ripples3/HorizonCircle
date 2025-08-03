@@ -52,15 +52,16 @@ export const wagmiConfig = createConfig({
   ssr: true,
 });
 
-// Contract addresses - CURRENT WORKING CONTRACTS (Jan 2025) ✅ USERS RECEIVE ETH
+// Contract addresses - UPDATED WITH DUPLICATE MEMBER FIX (Aug 2025) ✅ DEPLOYED & VERIFIED
 export const CONTRACT_ADDRESSES = {
   LENDING_POOL: '', // No default circle - users select their circle during borrow flow
   USDC_TOKEN: '0xA0b86a33E6441346a7f1c1c2eAb5c4A5eb13F6c8', // USDC on Lisk
   MORPHO_VAULT: '0x7Cbaa98bd5e171A658FdF761ED1Db33806a0d346', // Re7 WETH vault on Lisk
-  REGISTRY: '0x68Dc6FeBA312BF9B7BfBe096EA5e7ccb61a522dE', // ✅ CORRECT: Registry with partial sync (3/7 circles)
-  FACTORY: '0x95e4c63Ee7e82b94D75dDbF858F0D2D0600fcCdD', // ✅ FIXED: Actual working factory (7 circles created)
-  IMPLEMENTATION: '0x763004aE80080C36ec99eC5f2dc3F2C260638A83', // ✅ CORRECT: HorizonCircleWithMorphoAuth
-  LENDING_MODULE: '0xE5B8B9230BF53288e00ea4Fd2b17868cC6621801', // ✅ FIXED: Now funded - users receive ETH
+  REGISTRY: '0x68Dc6FeBA312BF9B7BfBe096EA5e7ccb61a522dE', // ✅ VERIFIED: Registry for circle discovery
+  FACTORY: '0x3540f3612Ac246D2aFE5DaeB0c825aEd29D43421', // ✅ DEPLOYED: Factory with addMember + duplicate fix
+  IMPLEMENTATION: '0x63373ea6A0C8DDC65883b0c9d2E0a67f96567Ccb', // ✅ DEPLOYED: Implementation with addMember + duplicate fix
+  LENDING_MODULE: '0x96F582fAF5a1D61640f437EBea9758b18a678720', // ✅ VERIFIED: LendingModuleSimplified
+  SWAP_MODULE: '0x1E394C5740f3b04b4a930EC843a43d1d49Ddbd2A', // ✅ VERIFIED: SwapModuleIndustryStandardV2 (CURRENT PRODUCTION)
 } as const;
 
 // Contract ABIs - Actual deployed contract ABIs
@@ -256,10 +257,9 @@ export const CONTRACT_ABIS = {
       type: 'function',
       name: 'requestCollateral',
       inputs: [
-        { name: 'borrowAmount', type: 'uint256' },
-        { name: 'collateralAmount', type: 'uint256' },
+        { name: 'amount', type: 'uint256' },
         { name: 'contributors', type: 'address[]' },
-        { name: 'contributorAmounts', type: 'uint256[]' },
+        { name: 'amounts', type: 'uint256[]' },
         { name: 'purpose', type: 'string' }
       ],
       outputs: [{ name: 'requestId', type: 'bytes32' }],

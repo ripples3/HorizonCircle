@@ -80,7 +80,6 @@ export function useRequestCollateral() {
 
   const requestCollateral = async (
     borrowAmount: string, 
-    collateralAmount: string, 
     contributors: string[], 
     purpose: string, 
     circleAddress?: string
@@ -91,9 +90,13 @@ export function useRequestCollateral() {
       throw new Error('Circle contract address not provided');
     }
     
+    // Calculate collateral amount using 85% LTV (same as smart contract)
+    // 85% LTV means need 100/85 = 117.6% collateral
+    const borrowAmountInWei = parseEther(borrowAmount);
+    const collateralAmountInWei = (borrowAmountInWei * BigInt(10000)) / BigInt(8500);
+    
     // Check minimum contribution requirements (using constant)
     const MIN_CONTRIBUTION_WEI = parseEther('0.000001'); // 0.000001 ETH minimum from LiskConfig.sol
-    const collateralAmountInWei = parseEther(collateralAmount);
     const amountPerContributor = collateralAmountInWei / BigInt(contributors.length);
     
     if (amountPerContributor < MIN_CONTRIBUTION_WEI) {
@@ -159,8 +162,7 @@ export function useRequestCollateral() {
       throw validationError;
     }
 
-    // Convert amounts to wei units (18 decimals)
-    const borrowAmountInWei = parseEther(borrowAmount);
+    // borrowAmountInWei already calculated above for collateral calculation
 
     // Ensure contributors are properly typed as addresses
     const contributorAddresses = contributors.map(addr => addr as `0x${string}`);
@@ -176,7 +178,7 @@ export function useRequestCollateral() {
       address: targetAddress as `0x${string}`,
       abi: CONTRACT_ABIS.LENDING_POOL,
       functionName: 'requestCollateral',
-      args: [borrowAmountInWei, collateralAmountInWei, contributorAddresses, contributorAmounts, purpose],
+      args: [borrowAmountInWei, contributorAddresses, contributorAmounts, purpose],
     });
   };
 

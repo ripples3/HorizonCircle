@@ -6,8 +6,8 @@ import { CONTRACT_ADDRESSES, CONTRACT_ABIS } from '@/config/web3';
 import { rateLimitedGetLogs } from '@/utils/rateLimitedRpc';
 import { getCachedCircles, storeCachedCircles, storeCircleMetadata, type CircleCacheData } from '@/utils/circleCache';
 
-// Global block filter constant  
-const MIN_BLOCK_NUMBER = BigInt(19673221); // Updated block filter (Aug 2025)
+// Global block filter constant - LATEST DEPLOYMENT WITH DUPLICATE MEMBER FIX  
+const MIN_BLOCK_NUMBER = BigInt(19755618); // Aug 2025 - Factory with addMember + duplicate prevention (latest)
 
 // ETH balance (native token on Lisk)
 export function useETHBalance(address: string | undefined) {
@@ -69,6 +69,8 @@ export function useUserCirclesDirect() {
   const publicClient = usePublicClient();
   const [filteredCircles, setFilteredCircles] = React.useState<string[]>([]);
   const [isFiltering, setIsFiltering] = React.useState(true); // Start as loading
+  const [hasRunDiscovery, setHasRunDiscovery] = React.useState(false); // Track if discovery completed
+  const discoveryInProgress = React.useRef(false); // Prevent concurrent discovery runs
   
   // Use FACTORY as primary source since it has getUserCircles() 
   const result = useReadContract({
@@ -104,6 +106,13 @@ export function useUserCirclesDirect() {
       return;
     }
     
+    // Prevent concurrent discovery runs
+    if (discoveryInProgress.current) {
+      console.log('⏸️ Discovery already in progress, skipping...');
+      return;
+    }
+    
+    discoveryInProgress.current = true;
     setIsFiltering(true);
     
     try {
@@ -134,6 +143,8 @@ export function useUserCirclesDirect() {
           console.log('⚡ Using cached circles:', cachedData.circles.length);
           setFilteredCircles(cachedData.circles);
           setIsFiltering(false);
+          setHasRunDiscovery(true); // Mark as completed when using cache
+          discoveryInProgress.current = false; // Reset discovery flag
           return;
         }
       }
@@ -194,6 +205,9 @@ export function useUserCirclesDirect() {
         const name = log.args?.name || 'Unknown Circle';
         const creator = log.args?.creator;
         
+        // Debug log to see what names we're getting
+        console.log(`🏭 Factory event: ${circleAddress} named "${name}" by ${creator}`);
+        
         if (!circleAddress) return null;
         
         // Skip if already in our user circles
@@ -210,13 +224,18 @@ export function useUserCirclesDirect() {
           }) as boolean;
           
           if (isMember) {
-            // Store circle metadata in cache
-            await storeCircleMetadata({
-              address: circleAddress,
-              name,
-              creator,
-              isFactory: true, // Mark as factory-created
-            });
+            // Store circle metadata in cache with proper validation
+            if (circleAddress && name && creator) {
+              await storeCircleMetadata({
+                address: circleAddress,
+                name,
+                creator,
+                registrationBlock: log.blockNumber || BigInt(0), // Use log block number
+              });
+              
+              // Log the name we found for debugging
+              console.log(`📝 Found circle name: "${name}" for ${circleAddress}`);
+            }
             
             // Found user is member of factory circle
             return circleAddress;
@@ -253,13 +272,15 @@ export function useUserCirclesDirect() {
           }) as boolean;
           
           if (isMember) {
-            // Store circle metadata in cache
-            await storeCircleMetadata({
-              address: circleAddress,
-              name,
-              creator: creator || '0x0000000000000000000000000000000000000000',
-              registrationBlock: currentBlock // Use current block as approximation
-            });
+            // Store circle metadata in cache with proper validation
+            if (circleAddress && name) {
+              await storeCircleMetadata({
+                address: circleAddress,
+                name,
+                creator: creator || '0x0000000000000000000000000000000000000000',
+                registrationBlock: log.blockNumber || currentBlock // Use log block or current block as approximation
+              });
+            }
             
             return circleAddress;
           }
@@ -304,6 +325,8 @@ export function useUserCirclesDirect() {
       console.log('🔄 Setting filtered circles:', uniqueCircles);
       setFilteredCircles(uniqueCircles);
       setIsFiltering(false);
+      setHasRunDiscovery(true); // Mark discovery as completed
+      discoveryInProgress.current = false; // Reset discovery flag
       
     } catch (error) {
       console.error('❌ Error discovering user circles:', error);
@@ -317,19 +340,35 @@ export function useUserCirclesDirect() {
       }
       
       setIsFiltering(false);
+      setHasRunDiscovery(true); // Mark as completed even on error to prevent retry loops
+      discoveryInProgress.current = false; // Reset discovery flag
     }
     }, [address, publicClient]);
     
-    // Memoize to prevent unnecessary re-execution
-    // Only run discovery if we have an address and haven't loaded circles yet  
-    const memoizedDiscoverCircles = React.useMemo(() => discoverUserCircles, [address, publicClient?.chain?.id]);
+    // Use ref to store latest discovery function without causing effect re-runs
+    const discoveryRef = React.useRef(discoverUserCircles);
+    discoveryRef.current = discoverUserCircles;
+    
+    // Reset discovery state when address changes
+    React.useEffect(() => {
+      if (address) {
+        console.log('🔄 Address changed, resetting discovery state for:', address);
+        setHasRunDiscovery(false);
+        setFilteredCircles([]);
+        setIsFiltering(false); // Allow discovery to start
+        discoveryInProgress.current = false; // Reset discovery flag
+      }
+    }, [address]);
     
     React.useEffect(() => {
-      // Skip if already has circles or no address
-      if (address && filteredCircles.length === 0) {
-        memoizedDiscoverCircles();
+      // Only run discovery if we have an address and haven't run discovery yet
+      if (address && !hasRunDiscovery) {
+        console.log('🔍 Starting circle discovery for:', address, 'hasRunDiscovery:', hasRunDiscovery);
+        discoveryRef.current();
+      } else {
+        console.log('⏸️ Skipping discovery - address:', !!address, 'hasRunDiscovery:', hasRunDiscovery);
       }
-    }, [memoizedDiscoverCircles, address, filteredCircles.length]);
+    }, [address, hasRunDiscovery]); // Removed unstable callback dependency
   
   // Return filtered data - prioritize discovered circles
   return {
@@ -354,16 +393,37 @@ export function useIsCircleMember(address: string | undefined, circleAddress?: s
   });
 }
 
-// Get circle name
+// Get circle name from cached metadata (since contract doesn't have name() function)
 export function useCircleName(circleAddress?: string) {
-  return useReadContract({
-    address: (circleAddress || CONTRACT_ADDRESSES.LENDING_POOL) as `0x${string}`,
-    abi: CONTRACT_ABIS.LENDING_POOL,
-    functionName: 'name',
-    query: {
-      enabled: !!(circleAddress || CONTRACT_ADDRESSES.LENDING_POOL),
-    },
-  });
+  const [cachedName, setCachedName] = React.useState<string | null>(null);
+  const [isLoading, setIsLoading] = React.useState(true);
+  
+  React.useEffect(() => {
+    if (!circleAddress) {
+      setCachedName(null);
+      setIsLoading(false);
+      return;
+    }
+    
+    // Get name from IndexedDB cache
+    import('../utils/circleCache').then(({ getCircleMetadata }) => {
+      getCircleMetadata(circleAddress)
+        .then((metadata) => {
+          setCachedName(metadata?.name || null);
+          setIsLoading(false);
+        })
+        .catch(() => {
+          setCachedName(null);
+          setIsLoading(false);
+        });
+    });
+  }, [circleAddress]);
+  
+  return {
+    data: cachedName,
+    isLoading,
+    error: null
+  };
 }
 
 // Get circle members
@@ -411,7 +471,11 @@ export function useCircleMembers(circleAddress?: string) {
         }
       }
       
-      setMembers(memberAddresses);
+      // Remove duplicates by converting to Set and back to array
+      const uniqueMembers = [...new Set(memberAddresses)];
+      console.log(`🔍 Members debug: Raw count=${count}, Raw members=[${memberAddresses.join(', ')}], Unique members=[${uniqueMembers.join(', ')}]`);
+      
+      setMembers(uniqueMembers);
     }
     
     fetchMembers();
