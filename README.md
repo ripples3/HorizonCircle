@@ -43,14 +43,22 @@ WETH Withdrawal → wstETH Swap → Morpho Lending → ETH Transfer to Borrower
 
 | Component | Contract | Address | Status |
 |-----------|----------|---------|---------|
-| **Circle Creation** | HorizonCircleFactory | `0x95e4c63Ee7e82b94D75dDbF858F0D2D0600fcCdD` |
-| **Circle Logic** | HorizonCircleWithMorphoAuth | `0x763004aE80080C36ec99eC5f2dc3F2C260638A83` | 
-| **Discovery** | CircleRegistry | `0x68Dc6FeBA312BF9B7BfBe096EA5e7ccb61a522dE` |
-| **Loan Execution** | LendingModule | `0xE5B8B9230BF53288e00ea4Fd2b17868cC6621801` |
+| **Factory** | HorizonCircleMinimalProxyWithModules | `0x3540f3612Ac246D2aFE5DaeB0c825aEd29D43421` | ✅ **Latest** |
+| **Implementation** | HorizonCircleWithMorphoAuth | `0x63373ea6A0C8DDC65883b0c9d2E0a67f96567Ccb` | ✅ **Latest** |
+| **Registry** | CircleRegistry | `0x68Dc6FeBA312BF9B7BfBe096EA5e7ccb61a522dE` | ✅ **Verified** |
+| **Lending Module** | LendingModuleSimplified | `0x96F582fAF5a1D61640f437EBea9758b18a678720` | ✅ **Verified** |
+| **Swap Module** | SwapModuleIndustryStandardV2 | `0x1E394C5740f3b04b4a930EC843a43d1d49Ddbd2A` | ✅ **Verified** |
+
+**✨ Latest Features** (August 2025):
+- ✅ **addMember Functionality**: Add friends to existing circles
+- ✅ **Duplicate Prevention**: Smart contract prevents duplicate members
+- ✅ **Complete DeFi Integration**: Full loan execution with WETH→wstETH→Morpho lending
+- ✅ **Real-time Yield**: ~5% APY on all deposits via Morpho vault integration
 
 **Network**: Lisk Mainnet (Chain ID: 1135)  
 **Currency**: Native ETH  
-**Block Explorer**: https://blockscout.lisk.com/
+**Block Explorer**: https://blockscout.lisk.com/  
+**Deploy Block**: 19,755,618 (August 2025)
 
 ## 🛠️ Tech Stack
 
@@ -136,14 +144,15 @@ HorizonCircle/
 │   │   └── config/           # Contract addresses & ABIs
 │   └── package.json
 ├── contracts/                # Smart contracts
-│   ├── src/                  # Active contracts
-│   │   ├── HorizonCircleWithMorphoAuth.sol
-│   │   ├── HorizonCircleModularFactory.sol
-│   │   ├── CircleRegistry.sol
-│   │   └── interfaces/       # External protocol interfaces
-│   ├── future/               # Advanced contracts (ready for deployment)
-│   ├── unused/               # Legacy/experimental contracts
+│   ├── src/                  # Active contracts (PRODUCTION)
+│   │   ├── HorizonCircleWithMorphoAuth.sol         # ✅ Circle implementation
+│   │   ├── HorizonCircleMinimalProxyWithModules.sol # ✅ Factory
+│   │   ├── CircleRegistry.sol                      # ✅ Discovery system
+│   │   ├── LendingModuleSimplified.sol             # ✅ Morpho integration
+│   │   ├── SwapModuleIndustryStandardV2.sol        # ✅ Velodrome swaps
+│   │   └── LiskConfig.sol                          # ✅ Network config
 │   ├── script/               # Deployment scripts
+│   ├── tests_archive/        # Essential test scripts only
 │   └── foundry.toml
 └── README.md
 ```
@@ -239,23 +248,26 @@ npm run test         # Run tests (if configured)
 
 ## 📋 Roadmap
 
-### Phase 1 (✅ Completed)
-- Basic lending circle functionality
-- Factory pattern deployment
-- Morpho vault integration
-- UI for circle management
+### Phase 1 (✅ Completed - August 2025)
+- ✅ **Complete Lending Circle System**: Factory pattern with proxy deployment
+- ✅ **Full DeFi Integration**: Morpho vault + Morpho lending + Velodrome swaps
+- ✅ **Member Management**: Add/remove members with duplicate prevention
+- ✅ **Real-time Yield**: ~5% APY on all ETH deposits
+- ✅ **Complete Loan Execution**: WETH→wstETH→Morpho lending→ETH to borrower
+- ✅ **Production UI**: Circle creation, deposits, loans, member management
 
-### Phase 2 (🔄 In Progress)
-- Advanced DeFi integration (Morpho Blue lending)
-- Enhanced UI/UX improvements
-- Real-time notifications
-- Mobile optimization
+### Phase 2 (🔄 Ready for Production)
+- ✅ **Smart Contract Verification**: All contracts verified on Lisk Blockscout
+- ✅ **Bug Fixes**: Duplicate member prevention, cache optimization
+- ✅ **Enhanced UX**: Improved error handling and user feedback
+- 🔄 **Mobile Optimization**: Responsive design improvements
+- 🔄 **Advanced Notifications**: Real-time loan request alerts
 
-### Phase 3 (🔮 Future)
-- Multi-protocol yield strategies
-- Cross-chain integration
-- Governance features
-- Philippine market expansion
+### Phase 3 (🔮 Future Enhancements)
+- 🔮 **Multi-protocol Yield**: Integrate additional DeFi protocols
+- 🔮 **Cross-chain Support**: Expand to other L2 networks
+- 🔮 **Governance Features**: DAO-style circle governance
+- 🔮 **Philippine Market**: Localized features and partnerships
 
 ## 📄 License
 
@@ -263,8 +275,10 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 🔗 Links
 
-- **Live App**: [Coming Soon]
-- **Documentation**: See `CLAUDE.md` and `TODO.md`
+- **Live Contracts**: All contracts deployed and verified on Lisk mainnet
+- **Factory**: [0x3540f3612Ac246D2aFE5DaeB0c825aEd29D43421](https://blockscout.lisk.com/address/0x3540f3612Ac246D2aFE5DaeB0c825aEd29D43421)
+- **Implementation**: [0x63373ea6A0C8DDC65883b0c9d2E0a67f96567Ccb](https://blockscout.lisk.com/address/0x63373ea6A0C8DDC65883b0c9d2E0a67f96567Ccb)
+- **Documentation**: See `CLAUDE.md` for technical details
 - **Block Explorer**: https://blockscout.lisk.com/
 - **Lisk Network**: https://lisk.com/
 
